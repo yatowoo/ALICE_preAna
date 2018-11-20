@@ -415,8 +415,8 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 		//kNaccTrcklts10Corr
 		//histos->UserHistogram("Event","SPDTracklets","SPDTracklets;SPDTracklets;Entries",300,0.,300.,AliDielectronVarManager::kCentralitySPDTracklets);
 
-		histos->UserHistogram("Event", "kNaccTrcklts10Corr", "kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries", 400, 0., 200., AliDielectronVarManager::kNaccTrcklts10Corr);
-		histos->UserHistogram("Event", "VtxZ_kNaccTrcklts10Corr", "VtxZ vs. kNaccTrcklts10Corr;VtxZ;kNaccTrcklts10Corr", 500, -40., 40., 400, 0., 200., AliDielectronVarManager::kZvPrim, AliDielectronVarManager::kNaccTrcklts10Corr);
+		histos->UserHistogram("Event", "kNaccTrcklts10Corr", "kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries", 200, 0., 200., AliDielectronVarManager::kNaccTrcklts10Corr);
+		histos->UserHistogram("Event", "VtxZ_kNaccTrcklts10Corr", "VtxZ vs. kNaccTrcklts10Corr;VtxZ;kNaccTrcklts10Corr", 500, -40., 40., 200, 0., 200., AliDielectronVarManager::kZvPrim, AliDielectronVarManager::kNaccTrcklts10Corr);
 
 		//new multiplicity estimator: V0
 
