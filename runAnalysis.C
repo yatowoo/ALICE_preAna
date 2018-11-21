@@ -1,7 +1,3 @@
-#include "AliAnalysisAlien.h"
-#include "AliAnalysisManager.h"
-#include "AliAODInputHandler.h"
-
 // Mode : local, test, full, merge, final
 void runAnalysis(TString mode="local")
 {
@@ -31,9 +27,12 @@ void runAnalysis(TString mode="local")
     // TASK - PID response
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse();
+    // TASK - PID QA
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+    AddTaskPIDqa("PIDqa.root");
     // TASK - from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    AddTask_cjahnke_JPsi("16l", 3, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kFALSE, 0);
+    AddTask_cjahnke_JPsi("16l", 3, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
 
     if(!mgr->InitAnalysis()) return;
     mgr->SetDebugLevel(2);
@@ -73,7 +72,7 @@ void runAnalysis(TString mode="local")
         alienHandler->SetTTL(43200); // Half a day
         
         // define the output folders
-        alienHandler->SetGridWorkingDir("16l_PreAna_CJ_EG1_test");
+        alienHandler->SetGridWorkingDir("16l_QA_CJ_EG1_test");
         alienHandler->SetGridOutputDir("OutputAOD");
         // Automatical generated files
         alienHandler->SetAnalysisMacro(task_name + ".C");

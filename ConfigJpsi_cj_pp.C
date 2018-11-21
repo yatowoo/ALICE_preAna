@@ -7,7 +7,7 @@ void AddMCSignals(AliDielectron *diele);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 
-TString namesDieleData = ("TPC;EMCal"); //add EMCal2 to have a loose E/p cut!
+TString namesDieleData = ("TPC;EMCal;EMCal_loose;RAW"); //add EMCal2 to have a loose E/p cut!
 
 TObjArray *arrNamesDieleData = namesDieleData.Tokenize(";");
 
@@ -183,37 +183,24 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	if (isAOD)
 	{
 
-		//if(cutDefinition==0 || cutDefinition==1){
-		pt->AddCut(AliDielectronVarManager::kNclsTPC, 85., 160.);
-		pt->AddCut(AliDielectronVarManager::kEta, -0.9., 0.9);
-		//pt->AddCut(AliDielectronVarManager::kPhi,0.,4.);
-		pt->AddCut(AliDielectronVarManager::kImpactParXY, -1., 1.);
-		pt->AddCut(AliDielectronVarManager::kImpactParZ, -3., 3.);
-		pt->AddCut(AliDielectronVarManager::kITSLayerFirstCls, 0., 4.);
-		//new
-		pt->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 4.);
-		//}
-
-		/*
-		if(cutDefinition==2){
-		pt->AddCut(AliDielectronVarManager::kNclsTPC,70.,160.);
-		pt->AddCut(AliDielectronVarManager::kEta,-1.0.,1.0);
-		//pt->AddCut(AliDielectronVarManager::kPhi,0.,4.);
-		pt->AddCut(AliDielectronVarManager::kImpactParXY,-2.,2.);
-		pt->AddCut(AliDielectronVarManager::kImpactParZ,-4.,4.);	  
-		pt->AddCut(AliDielectronVarManager::kITSLayerFirstCls,0.,6.);
-		//new
-		pt->AddCut(AliDielectronVarManager::kTPCchi2Cl,0.,10.);
-
+		if(cutDefinition <= 2){ // TPC or EMCal
+			pt->AddCut(AliDielectronVarManager::kNclsTPC, 85., 160.);
+			pt->AddCut(AliDielectronVarManager::kEta, -0.9., 0.9);
+			pt->AddCut(AliDielectronVarManager::kImpactParXY, -1., 1.);
+			pt->AddCut(AliDielectronVarManager::kImpactParZ, -3., 3.);
+			pt->AddCut(AliDielectronVarManager::kITSLayerFirstCls, 0., 4.);
+			pt->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 4.);
+			pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
 		}
-	 */
-
-		//if(cutDefinition==0||cutDefinition==1){
-		pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
-		// }
-		// if(cutDefinition==2){
-		// pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-3.0,4.0);
-		//}
+		if(cutDefinition==3){ // RAW
+			pt->AddCut(AliDielectronVarManager::kNclsTPC, 50., 160.);
+			pt->AddCut(AliDielectronVarManager::kEta, -1., 1.);
+			pt->AddCut(AliDielectronVarManager::kImpactParXY, -5., 5.);
+			pt->AddCut(AliDielectronVarManager::kImpactParZ, -10., 10.);
+			pt->AddCut(AliDielectronVarManager::kITSLayerFirstCls, 0., 6.);
+			pt->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 10.);		
+			pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-10.,10.);
+		}
 	}
 
 	diele->GetTrackFilter().AddCuts(pt);
@@ -384,7 +371,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	//Pair classes
 	// to fill also mixed event histograms loop until 10
 
-	if (cutDefinition != 2)
+	if (cutDefinition != 3)
 	{
 
 		for (Int_t i = 0; i < 3; ++i)
@@ -403,8 +390,11 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	//histos->AddClass(Form("Pair_%s",PairClassName(AliDielectron::kEv1PMRot)));
 	//histos->AddClass(Form("Track_Legs_%s",PairClassName(AliDielectron::kEv1PMRot)));
 
-	//add histograms to event class
-	if (cutDefinition == 0)
+	/*
+	// Histogram for Event
+	// -- ONLY in RAW cut definition
+	*/
+	if (cutDefinition == 3) // RAW
 	{
 		histos->AddClass("Event");
 		histos->UserHistogram("Event", "VtxZ", "Vertex Z;Z[cm]", 500, -40., 40., AliDielectronVarManager::kZvPrim);
@@ -449,70 +439,79 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 
 	//histos->UserHistogram("Track","SPDTracklets","SPDTracklets;SPDTracklets;Entries",300,0.,300.,AliDielectronVarManager::kCentralitySPDTracklets);
 	// histos->UserHistogram("Track","kNaccTrcklts10Corr","kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries",300,0.,300.,AliDielectronVarManager::kNaccTrcklts10Corr);
+	histos->UserHistogram("Track","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",160,0,160,AliDielectronVarManager::kNclsTPC,kTRUE);
 
-	histos->UserHistogram("Track", "dXY", "dXY;dXY [cm];#tracks", 200, -1., 1., AliDielectronVarManager::kImpactParXY, kTRUE);
+	histos->UserHistogram("Track","TPCchi2Cl","Chi-2/Clusters TPC;Chi2/ncls number clusteres;#tracks",100,0,10,AliDielectronVarManager::kTPCchi2Cl,kTRUE);
 
-	histos->UserHistogram("Track", "dZ", "dZ;dZ [cm];#tracks", 200, -3., 3., AliDielectronVarManager::kImpactParZ, kTRUE);
+	histos->UserHistogram("Track", "dXY", "dXY;dXY [cm];#tracks", 200, -5., 5., AliDielectronVarManager::kImpactParXY, kTRUE);
+
+	histos->UserHistogram("Track", "dZ", "dZ;dZ [cm];#tracks", 200, -10., 10., AliDielectronVarManager::kImpactParZ, kTRUE);
 
 	histos->UserHistogram("Track", "Eta_Phi", "Eta Phi Map; Eta; Phi;#tracks",
-												100, -1, 1, 144, 0, 6.285, AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi, kTRUE);
+												100, -1, 1, 144, 0, TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi, kTRUE);
 
-	histos->UserHistogram("Track", "dEdx_P", "dEdx;P [GeV];TPC signal (arb units);#tracks",
+	histos->UserHistogram("Track", "dEdx_P", "dEdx vs PinTPC;P [GeV];TPC signal (a.u.);#tracks",
 												200, 0.2, 20., 800, 20., 200., AliDielectronVarManager::kPIn, AliDielectronVarManager::kTPCsignal, kTRUE);
 
-	histos->UserHistogram("Track", "dEdx_Pt", "dEdx;Pt [GeV];TPC signal (arb units);#tracks",
+	histos->UserHistogram("Track", "dEdx_Pt", "dEdx vs Pt;Pt [GeV];TPC signal (a.u.);#tracks",
 												200, 0.2, 20., 800, 20., 200., AliDielectronVarManager::kPt, AliDielectronVarManager::kTPCsignal, kTRUE);
 
-	histos->UserHistogram("Track", "TPCnSigmaEle_P", "TPCnSigmaEle;P [GeV];TPCnSigmaEle;#tracks",
+	histos->UserHistogram("Track", "TPCnSigmaEle_P", "n#sigma_{e}(TPC) vs P_{in} TPC;P_{in} [GeV];n#sigma_{e}(TPC);#tracks",
 												200, 0.2, 20., 800, -12., 12., AliDielectronVarManager::kPIn, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
 
-	histos->UserHistogram("Track", "TPCnSigmaEle_Pt", "TPCnSigmaEle;Pt [GeV];TPCnSigmaEle;#tracks",
+	histos->UserHistogram("Track", "TPCnSigmaEle_Pt", "n#sigma_{e}(TPC) vs Pt;Pt [GeV];n#sigma_{e}(TPC);#tracks",
 												200, 0.2, 20., 800, -12., 12., AliDielectronVarManager::kPt, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
 
-	histos->UserHistogram("Track", "TPCnSigmaEle_Phi", "TPCnSigmaEle;#phi [rad];TPCnSigmaEle;#tracks",
+	histos->UserHistogram("Track", "TPCnSigmaEle_Phi", "n#sigma_{e}(TPC) vs #phi;#phi [rad];n#sigma_{e}(TPC);#tracks",
 												200, 0., 2 * TMath::Pi(), 800, -12., 12., AliDielectronVarManager::kPhi, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
 
-	histos->UserHistogram("Track", "TPCnSigmaEle_Eta", "TPCnSigmaEle;#eta;TPCnSigmaEle;#tracks",
+	histos->UserHistogram("Track", "TPCnSigmaEle_Eta", "n#sigma_{e}(TPC) vs #eta;#eta;n#sigma_{e}(TPC);#tracks",
 												200, -1., 1., 800, -12., 12., AliDielectronVarManager::kEta, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
 
-	histos->UserHistogram("Track", "dEdx_Phi", "dEdx;#phi [rad];TPC signal (arb units);#tracks",
+	histos->UserHistogram("Track", "dEdx_Phi", "dEdx vs #phi;#phi [rad];TPC signal (a.u.);#tracks",
 												200, 0., 2 * TMath::Pi(), 800, 20., 200., AliDielectronVarManager::kPhi, AliDielectronVarManager::kTPCsignal, kTRUE);
 
-	histos->UserHistogram("Track", "dEdx_Eta", "dEdx;#eta;TPC signal (arb units);#tracks",
+	histos->UserHistogram("Track", "dEdx_Eta", "dEdx vs #eta;#eta;TPC signal (a.u.);#tracks",
 												200, -1., 1., 800, 20., 200., AliDielectronVarManager::kEta, AliDielectronVarManager::kTPCsignal, kTRUE);
 
-	histos->UserHistogram("Track", "dEdx_nSigmaEMCal", "dEdx;NsigmaEmcal;TPC signal (arb units);NSigmaEMCAL",
+	histos->UserHistogram("Track", "dEdx_nSigmaEMCal", "dEdx vs n#sigma_{e}(EMCAL);n#sigma_{e}(EMCAL);TPC signal (a.u.);#tracks",
 												200, -5., 5., 800, 20., 200., AliDielectronVarManager::kEMCALnSigmaEle, AliDielectronVarManager::kTPCsignal, kTRUE);
 
-	histos->UserHistogram("Track", "dEdx_TPCnSigmaEle", "dEdx;TPC signal (arbunits);TPC number of sigmas Electrons;TPC signal (a.u.);#tracks",
+	histos->UserHistogram("Track", "dEdx_TPCnSigmaEle", "dEdx vs n#sigma_{e}(TPC);n#sigma_{e}(TPC);TPC signal (a.u.);#tracks",
 												100, -10., 10., 800, 20., 200., AliDielectronVarManager::kTPCnSigmaEle, AliDielectronVarManager::kTPCsignal, kTRUE);
 
-	histos->UserHistogram("Track", "dEdx_EoverP", "dEdx;EoverP;TPC signal (arbunits);E/P",
-												100, 0., 5., 800, 20., 200., AliDielectronVarManager::kEMCALEoverP, AliDielectronVarManager::kTPCsignal, kTRUE);
-
+	histos->UserHistogram("Track", "dEdx_EoverP", "dEdx vs E/p;E/P;TPC signal (a.u.);#tracks",
+												200, 0., 2., 800, 20., 200., AliDielectronVarManager::kEMCALEoverP, AliDielectronVarManager::kTPCsignal, kTRUE);
+	
+	histos->UserHistogram("Track", "nSigmaTPC_EMCal", "n#sigma_{e}(TPC vs EMCAL);n#sigma_{e}(EMCAL);n#sigma_{e}(TPC);#tracks",
+												200, -5., 5., 200, -12., 12., AliDielectronVarManager::kEMCALnSigmaEle, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
 	//histos->UserHistogram("Track","nSigmaEMCal_EoverP","NsigmaEmcal;EoverP;NSigmaEMCAL;E/P",100,0.,5.,200,-5.,5.,AliDielectronVarManager::kEMCALEoverP,AliDielectronVarManager::kEMCALnSigmaEle,kTRUE);
 
 	histos->UserHistogram("Track", "EMCal_E", "EmcalE;Cluster Energy [GeV];#Clusters",
 												200, 0., 40., AliDielectronVarManager::kEMCALE, kTRUE);
 
-	//histos->UserHistogram("Track","ITS_FirstCls","ITS First Layer;ITS First Layer;#Entries",6,0.,6.,AliDielectronVarManager::kITSLayerFirstCls,kTRUE);
+	histos->UserHistogram("Track", "EoverP", "EMCal E/p ratio;E/p;#Clusters",
+												200, 0., 2., AliDielectronVarManager::kEMCALEoverP, kTRUE);
 
-	//add histograms to Pair classes
-	//new Cris
+	histos->UserHistogram("Track","ITS_FirstCls","ITS First Cluster;Layer No. of ITS 1st cluster;#Entries",6,0.,6.,AliDielectronVarManager::kITSLayerFirstCls,kTRUE);
+
 
 	//Ecluster versus Phi to separate EMCal and DCal
-	histos->UserHistogram("Track", "EMCal_E_Phi", "Energy vs. Phi; EMCal_E;Phi",
-												80, 0., 40., 20, 0., 2 * TMath::Pi(), AliDielectronVarManager::kEMCALE, AliDielectronVarManager::kPhi, kTRUE);
+	histos->UserHistogram("Track", "EMCal_E_Phi", "Cluster energy vs. #phi; EMCal_E;Phi;#tracks",
+												80, 0., 40., 20, 0., TMath::TwoPi(), AliDielectronVarManager::kEMCALE, AliDielectronVarManager::kPhi, kTRUE);
 
-	histos->UserHistogram("Track", "TPCnSigmaEle_EoverP", "TPCnSigmaEle;EoverP;TPC signal (arbunits);E/P",
-												50, 0., 5., 100, -10., 10., AliDielectronVarManager::kEMCALEoverP, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
-	histos->UserHistogram("Track", "EoverP_pt", "Pt;EoverP;p_{T} (GeV/c);E/p",
+	histos->UserHistogram("Track", "TPCnSigmaEle_EoverP", "n#sigma_{e}(TPC) vs E/p;E/p;n#sigma_{e}(TPC);#tracks",
+												200, 0., 2., 100, -12., 12., AliDielectronVarManager::kEMCALEoverP, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
+	histos->UserHistogram("Track", "EoverP_pt", "E/p ratio vs Pt;Pt (GeV/c);E/p;#tracks",
 												40, 0., 40., 200, 0., 2., AliDielectronVarManager::kPt, AliDielectronVarManager::kEMCALEoverP, kTRUE);
 
+	/*
+	// Histograms for Pair
+	*/
 	histos->UserHistogram("Pair", "OpeningAngle2D", "Opening angle vs p_{T} ;p_{T} (GeV/c); angle",
 												40, 0., 40., 2000, -10., 10., AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
 
-	histos->UserHistogram("Pair", "InvMass", "Inv.Mass;Inv. Mass [GeV];#pairs",
+	histos->UserHistogram("Pair", "InvMass", "Inv.Mass;Inv. Mass [GeV];#pairs/40MeV",
 												375, 0.0, 15.0, AliDielectronVarManager::kM);
 
 	histos->UserHistogram("Pair", "InvMass2D", "Inv.Mass;Pt [GeV]; Inv. Mass [GeV]",

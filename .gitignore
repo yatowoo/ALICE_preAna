@@ -1,0 +1,12 @@
+*~
+*.o
+*.d
+*.so
+*.root
+*.xml
+*.pcm
+.vscode/
+run.log
+myTask*
+stderr
+output/
