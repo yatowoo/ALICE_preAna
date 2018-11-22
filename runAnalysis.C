@@ -100,7 +100,7 @@ void runAnalysis(TString mode="local")
         } else if(mode == "full"){
             // else launch the full grid analysis
             alienHandler->SetRunMode("full");
-        } else if(mode == "merge") {
+        } else if(mode == "merge" || mode == "final") {
             alienHandler->SetRunMode("terminate");
         } else{
             cout << "[X] Error - Unknown mode : " << mode << endl;
