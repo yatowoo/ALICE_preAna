@@ -9,13 +9,26 @@ TF1* bkg = NULL;
 TF1* total = NULL;
 
 TLegend* yatoLegend(){
-		TLegend* yLgd= new TLegend(0.20,0.15,0.6,0.35);
-		yLgd->SetName("mgLegend");
-		yLgd->SetBorderSize(0);
-		yLgd->SetTextAlign(12);
-		yLgd->SetTextFont(42);
-		yLgd->SetTextSize(0.04);
-		return yLgd;
+  // NDC x1, y1, x2, y2, bottom-right
+	auto yLgd= new TLegend(0.13,0.60,0.49, 0.88, "", "brNDC");
+	yLgd->SetName("yLgd");
+	yLgd->SetBorderSize(0);
+	yLgd->SetTextAlign(12);
+	yLgd->SetTextFont(42);
+	yLgd->SetTextSize(0.04);
+	return yLgd;
+}
+
+TPaveText* yatoPaveText(){
+  // NDC x1, y1, x2, y2, bottom-right
+  auto pTxt = new TPaveText(0.62, 0.39, 0.87, 0.88, "brNDC");
+	pTxt->SetName("yTxt");
+	pTxt->SetBorderSize(0);
+	pTxt->SetTextAlign(12);
+	pTxt->SetTextFont(42);
+	pTxt->SetTextSize(0.04);
+  pTxt->SetFillColor(0);
+  return pTxt;
 }
 
 // Input mass range for estimation of signal & background
@@ -60,28 +73,57 @@ int SelectSignalRegion(Double_t mlow, Double_t mup, Double_t width = 0.04){
   cout << "--> Total:      " << Ntotal << " +/- " << errTot << endl;
   cout << "--> Signal:     " << Njpsi << " +/- " << errJpsi << endl;
   cout << "--> Background: " << Nbkg << " +/- " << errBkg << endl;
+
+  // Build result pave on canvas
+  auto pTxt = yatoPaveText();
+    // J/psi mass range
+  auto entry = pTxt->AddText(
+    Form("M_{J/#psi} #in [%.2f, %.2f] (GeV/c^{2})", mlow, mup));
+  entry->SetTextSize(0.03);
+  entry->SetTextFont(62); // Helvetica (Bold)
+  entry = pTxt->AddText(
+    Form("Total:    %.0f #pm %.0f", Ntotal, errTot));
+  entry = pTxt->AddText(
+    Form("Signal:  %.0f #pm %.0f", Njpsi, errJpsi));
+  entry = pTxt->AddText(
+    Form("Bkg:      %.0f #pm %.0f", Nbkg, errBkg));
+    // S/B significance
+  Double_t errSB = Njpsi / Nbkg;
+  errSB *= TMath::Sqrt(errJpsi*errJpsi/Njpsi/Njpsi + errBkg*errBkg/Nbkg/Nbkg);
+  entry = pTxt->AddText(
+    Form("S/B        = %.2f #pm %.2f", Njpsi / Nbkg, errSB));
+    // S/#sqrt{S+B} significance
+  Double_t errSN = Njpsi / TMath::Sqrt(Ntotal);
+  errSN *= TMath::Sqrt(errJpsi*errJpsi/Njpsi/Njpsi + errTot*errTot/Ntotal/Ntotal/4);
+  entry = pTxt->AddText(
+    Form("S/#sqrt{S+B}  = %.2f #pm %.2f", Njpsi / TMath::Sqrt(Ntotal), errSN));
+    // Chi2
+  entry = pTxt->AddText(
+    Form("#chi^{2} / NDF = %.1f / %d", total->GetChisquare(), total->GetNDF()));
+  pTxt->Draw("same");
+
   return 0;
 }
 
-int ExtractSignal(TH1* invmass = NULL){
+int ExtractSignal(TH1* invmass, Double_t mlow = 1.5, Double_t mup = 4.5){
   // Crystalball Function = Gaus + X^n
     // Parameters : \alpha = break point, n, \sigma = width, \mu = peak
     // Unit : Y = Ncount/0.04, X=GeV/c^2
-  jpsi = new TF1("fJpsi", "[0]*ROOT::Math::crystalball_function(x,[1],[2],[3],[4])",1.,5.);
+  jpsi = new TF1("fJpsi", "[0]*ROOT::Math::crystalball_function(x,[1],[2],[3],[4])", mlow, mup);
   jpsi->SetLineColor(kBlack);
   jpsi->SetLineWidth(2);
   jpsi->SetLineStyle(2);
   jpsi->SetNpx(1000);
 
   // Backgroud Function - Pol2
-  bkg = new TF1("fBkg", "[0]+[1]*x+[2]*x^2", 1., 5.);
+  bkg = new TF1("fBkg", "[0]+[1]*x+[2]*x^2", mlow, mup);
   bkg->SetLineColor(kGreen);
   bkg->SetLineWidth(2);
   bkg->SetLineStyle(2);
   bkg->SetNpx(1000);
 
   // Total function for fitting
-  total = new TF1("fTot","fJpsi+fBkg", 1., 5.);
+  total = new TF1("fTot","fJpsi+fBkg", mlow, mup);
   total->SetParNames("A", "#alpha", "n", "#sigma", "#mu",
     "a0", "a1", "a2");
   total->SetLineColor(kRed);
@@ -106,16 +148,19 @@ int ExtractSignal(TH1* invmass = NULL){
   invmass->SetMarkerColor(kBlue);
   invmass->SetMarkerStyle(20);
     // Fit with bin integration and return fit result
-  invmass->Fit(total, "IS", "", 1.5, 4.5);
+  invmass->Fit(total, "IS", "", mlow, mup);
     // Draw marker & error bar (with empty bins)
   invmass->Draw("PE0");
 
   // Canvas configuration
   if(gPad){
-    invmass->GetYaxis()->SetRangeUser(0,300);
-    invmass->GetYaxis()->SetTitle("N_{pairs} / 0.04 GeV/c^{2}");
     invmass->GetXaxis()->SetRangeUser(1.5,4.5);
     invmass->GetXaxis()->SetTitle("M_{e^{+}e^{-}} (GeV/c^{2})");
+    // Y axis -> 2 * HIST max
+    invmass->GetYaxis()->SetRangeUser(0, 
+      2 * invmass->GetBinContent(invmass->GetMaximumBin()));
+    invmass->GetYaxis()->SetTitle(
+      Form("N_{pairs} / %.3f GeV/c^{2}", invmass->GetBinWidth(1)));
       // Show fit parameters
     gStyle->SetOptFit(1111);
     gPad->Update();
