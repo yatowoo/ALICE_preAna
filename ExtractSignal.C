@@ -131,10 +131,13 @@ int ExtractSignal(TH1* invmass, Double_t mlow = 1.5, Double_t mup = 4.5){
   total->SetNpx(1000);
     // Jpsi parameter
   total->SetParameter("A", 116);
+  total->SetParLimits(0, 0., 1000.);
   total->SetParameter("#alpha", 0.3);
   total->SetParameter("n", 1.);
+  total->SetParLimits(2, 0., 100.);
   total->SetParameter("#sigma", 0.04);
   total->SetParameter("#mu", 3.1);
+  total->SetParLimits(4, mlow, mup);
     // Background parameter
   total->SetParameter("a0", 250.);
   total->SetParameter("a1", -100);
