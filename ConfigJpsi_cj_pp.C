@@ -7,7 +7,7 @@ void AddMCSignals(AliDielectron *diele);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 
-TString namesDieleData = ("TPC;EMCal;EMCal_loose;RAW"); //add EMCal2 to have a loose E/p cut!
+TString namesDieleData = ("TPC;EMCal;EMCal_loose;EMCal_strict;RAW"); //add EMCal2 to have a loose E/p cut!
 
 TObjArray *arrNamesDieleData = namesDieleData.Tokenize(";");
 
@@ -183,7 +183,7 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	if (isAOD)
 	{
 
-		if(cutDefinition <= 2){ // TPC or EMCal
+		if(cutDefinition < nDie - 1){ // TPC or EMCal ( not RAW )
 			pt->AddCut(AliDielectronVarManager::kNclsTPC, 85., 160.);
 			pt->AddCut(AliDielectronVarManager::kEta, -0.9., 0.9);
 			pt->AddCut(AliDielectronVarManager::kImpactParXY, -1., 1.);
@@ -191,16 +191,21 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 			pt->AddCut(AliDielectronVarManager::kITSLayerFirstCls, 0., 4.);
 			pt->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 4.);
 			pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
+			if( cutDefinition == 3){ // EMCal_strict
+			  pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -1.5, 3.0);
+				// Exclude pion & proton
+			  pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio, -3.0, 3.0, kTRUE);
+			  pt->AddCut(AliDielectronVarManager::kTPCnSigmaPro, -3.0, 3.0, kTRUE);
+			}// EMCal_strict
 		}
-		if(cutDefinition==3){ // RAW
-			pt->AddCut(AliDielectronVarManager::kNclsTPC, 50., 160.);
-			pt->AddCut(AliDielectronVarManager::kEta, -1., 1.);
+		if( cutDefinition == nDie -1 ){ // RAW
+			pt->AddCut(AliDielectronVarManager::kPt, 0.5, 1e30);
+			pt->AddCut(AliDielectronVarManager::kNclsTPC, 10., 160.);
+			pt->AddCut(AliDielectronVarManager::kEta, -0.9, 0.9);
 			pt->AddCut(AliDielectronVarManager::kImpactParXY, -5., 5.);
 			pt->AddCut(AliDielectronVarManager::kImpactParZ, -10., 10.);
-			pt->AddCut(AliDielectronVarManager::kITSLayerFirstCls, 0., 6.);
 			pt->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 10.);		
-			pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle,-10.,10.);
-		}
+		}// RAW
 	}
 
 	diele->GetTrackFilter().AddCuts(pt);
@@ -224,7 +229,7 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 	pairCut->AddCut(AliDielectronVarManager::kY, -0.9, 0.9);
 	pairCut->AddCut(AliDielectronVarManager::kPt, 1, 50.);
 
-	if (cutDefinition == 1 || cutDefinition == 2)
+	if (cutDefinition == 1 || cutDefinition == 2 || cutDefinition == 3)
 	{
 		//EMC7 trigger
 		if (trigger_index == 1)
@@ -240,7 +245,7 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 
 	diele->GetPairFilter().AddCuts(pairCut);
 
-	if (cutDefinition == 1)
+	if (cutDefinition == 1 || cutDefinition == 3) // EMCal & EMCal_strict
 	{
 		AliDielectronVarCuts *mycut = new AliDielectronVarCuts("CutEMCAL", "cut for EMCal");
 		mycut->AddCut(AliDielectronVarManager::kEMCALEoverP, 0.8, 1.3);
@@ -360,7 +365,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	//Track classes
 	//EMCal tracks are same as TPC tracks... only changes the pair cuts
 	//to fill also track info from 2nd event loop until 2
-	if (cutDefinition != 2)
+	if (cutDefinition != 1 && cutDefinition != 2) // TPC, EMCal & EMCal_loose use the same track cut
 	{
 		for (Int_t i = 0; i < 2; ++i)
 		{
@@ -371,7 +376,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	//Pair classes
 	// to fill also mixed event histograms loop until 10
 
-	if (cutDefinition != 3)
+	if (cutDefinition != nDie - 1) // Not for RAW
 	{
 
 		for (Int_t i = 0; i < 3; ++i)
@@ -394,7 +399,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	// Histogram for Event
 	// -- ONLY in RAW cut definition
 	*/
-	if (cutDefinition == 3) // RAW
+	if (cutDefinition == nDie - 1) // RAW
 	{
 		histos->AddClass("Event");
 		histos->UserHistogram("Event", "VtxZ", "Vertex Z;Z[cm]", 500, -40., 40., AliDielectronVarManager::kZvPrim);
@@ -502,6 +507,8 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 
 	histos->UserHistogram("Track", "TPCnSigmaEle_EoverP", "n#sigma_{e}(TPC) vs E/p;E/p;n#sigma_{e}(TPC);#tracks",
 												200, 0., 2., 100, -12., 12., AliDielectronVarManager::kEMCALEoverP, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
+	histos->UserHistogram("Track", "EMCALnSigmaEle_EoverP", "n#sigma_{e}(EMCal) vs E/p;E/p;n#sigma_{e}(EMCal);#tracks",
+												200, 0., 2., 100, -12., 12., AliDielectronVarManager::kEMCALEoverP, AliDielectronVarManager::kEMCALnSigmaEle, kTRUE);
 	histos->UserHistogram("Track", "EoverP_pt", "E/p ratio vs Pt;Pt (GeV/c);E/p;#tracks",
 												40, 0., 40., 200, 0., 2., AliDielectronVarManager::kPt, AliDielectronVarManager::kEMCALEoverP, kTRUE);
 
