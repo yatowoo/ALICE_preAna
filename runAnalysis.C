@@ -1,8 +1,10 @@
 // Mode : local, test, full, merge, final
 void runAnalysis(TString mode="local")
 {
-    TString task_name = "myTask";
-    
+    TString task_name = "jpsiTask";
+    TString work_dir = "16l_Full_CJ_MB-EG1-EG2";
+    TString runlist = "259888  259868  259867  259866  259860  259842  259841  259822  259788  259781  259756  259752  259751  259750  259748  259747  259711  259704  259703  259697  259668  259650  259649  259477  259473  259396  259395  259394  259389  259388  259382  259378  259342  259341  259340  259339  259336  259334  259307  259305  259302  259274  259273  259272  259271  259270  259269  259263  259164  259118  259117  259099  259096  259091  259090  259088  258964  258962"; 
+
     // PATH for headers 
     gROOT->ProcessLine(".include $ROOTSYS/include");
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
@@ -71,14 +73,14 @@ void runAnalysis(TString mode="local")
         // MC has no prefix, data has prefix 000
         alienHandler->SetRunPrefix("000");
         // runnumber
-        alienHandler->AddRunNumber("259888");
+        alienHandler->AddRunNumber(runlist);
         // number of files per subjob
         alienHandler->SetSplitMaxInputFileNumber(20);
         // specify how many seconds your job may take
         alienHandler->SetTTL(43200); // Half a day
         
         // define the output folders
-        alienHandler->SetGridWorkingDir("16l_QA_CJ_EG1_test");
+        alienHandler->SetGridWorkingDir(work_dir);
         alienHandler->SetGridOutputDir("OutputAOD");
         // Automatical generated files
         alienHandler->SetAnalysisMacro(task_name + ".C");
