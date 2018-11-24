@@ -30,9 +30,15 @@ void runAnalysis(TString mode="local")
     // TASK - PID QA
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
     AddTaskPIDqa("PIDqa.root");
-    // TASK - from C. Jahnke
+    // TASK - MB from C. Jahnke
+    gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
+    AddTask_cjahnke_JPsi("16l", 0, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
+    // TASK - EG1 from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
     AddTask_cjahnke_JPsi("16l", 3, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
+    // TASK - EG2 from C. Jahnke
+    gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
+    AddTask_cjahnke_JPsi("16l", 4, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
 
     if(!mgr->InitAnalysis()) return;
     mgr->SetDebugLevel(2);
