@@ -38,7 +38,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AddTaskPIDqa("PIDqa.root");
     // TASK - MB from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    AddTask_cjahnke_JPsi("16l", 0, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
+    AddTask_cjahnke_JPsi("16l", 100, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
     // TASK - EG1 from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
     AddTask_cjahnke_JPsi("16l", 3, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
@@ -78,10 +78,12 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         alienHandler->SetRunPrefix("000");
         // runnumber
         alienHandler->AddRunNumber(runlist);
+        // number of runs per master job
+        alienHandler->SetNrunsPerMaster(1);
         // number of files per subjob
-        alienHandler->SetSplitMaxInputFileNumber(20);
+        alienHandler->SetSplitMaxInputFileNumber(50);
         // specify how many seconds your job may take
-        alienHandler->SetTTL(43200); // Half a day
+        alienHandler->SetTTL(43200); // 12 hours
         
         // define the output folders
         alienHandler->SetGridWorkingDir(work_dir);
