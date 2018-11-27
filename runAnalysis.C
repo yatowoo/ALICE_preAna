@@ -68,7 +68,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         // select the aliphysics version. all other packages
         // are LOADED AUTOMATICALLY!
         // RECOMMENDATION - Keep it the same with local version
-        alienHandler->SetAliPhysicsVersion("vAN-20180305-1");
+        alienHandler->SetAliPhysicsVersion("vAN-20180414-1");
         // set the Alien API version
         alienHandler->SetAPIVersion("V1.1x");
         // select the input data
