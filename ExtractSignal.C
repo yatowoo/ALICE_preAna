@@ -10,23 +10,23 @@ TF1* total = NULL;
 
 TLegend* yatoLegend(){
   // NDC x1, y1, x2, y2, bottom-right
-	auto yLgd= new TLegend(0.13,0.60,0.49, 0.88, "", "brNDC");
-	yLgd->SetName("yLgd");
-	yLgd->SetBorderSize(0);
-	yLgd->SetTextAlign(12);
-	yLgd->SetTextFont(42);
-	yLgd->SetTextSize(0.04);
-	return yLgd;
+  auto yLgd= new TLegend(0.13,0.60,0.49, 0.88, "", "brNDC");
+  yLgd->SetName("yLgd");
+  yLgd->SetBorderSize(0);
+  yLgd->SetTextAlign(12);
+  yLgd->SetTextFont(42);
+  yLgd->SetTextSize(0.04);
+  return yLgd;
 }
 
 TPaveText* yatoPaveText(){
   // NDC x1, y1, x2, y2, bottom-right
   auto pTxt = new TPaveText(0.62, 0.39, 0.87, 0.88, "brNDC");
-	pTxt->SetName("yTxt");
-	pTxt->SetBorderSize(0);
-	pTxt->SetTextAlign(12);
-	pTxt->SetTextFont(42);
-	pTxt->SetTextSize(0.04);
+  pTxt->SetName("yTxt");
+  pTxt->SetBorderSize(0);
+  pTxt->SetTextAlign(12);
+  pTxt->SetTextFont(42);
+  pTxt->SetTextSize(0.04);
   pTxt->SetFillColor(0);
   return pTxt;
 }
@@ -39,7 +39,7 @@ int SelectSignalRegion(Double_t mlow, Double_t mup, Double_t width = 0.04){
   }
   // Fit result check
   auto fitter = TVirtualFitter::GetFitter();
-  if(!fitter){
+  if(!fitter && !fitter->GetCovarianceMatrix()){
     cout << "[X] ERROR - No fit result found." << endl;
     return 1;
   }
@@ -109,20 +109,23 @@ int ExtractSignal(TH1* invmass, Double_t mlow = 1.5, Double_t mup = 4.5){
   // Crystalball Function = Gaus + X^n
     // Parameters : \alpha = break point, n, \sigma = width, \mu = peak
     // Unit : Y = Ncount/0.04, X=GeV/c^2
-  jpsi = new TF1("fJpsi", "[0]*ROOT::Math::crystalball_function(x,[1],[2],[3],[4])", mlow, mup);
+  if(!jpsi)
+    jpsi = new TF1("fJpsi", "[0]*ROOT::Math::crystalball_function(x,[1],[2],[3],[4])", mlow, mup);
   jpsi->SetLineColor(kBlack);
   jpsi->SetLineWidth(2);
   jpsi->SetLineStyle(2);
   jpsi->SetNpx(1000);
 
   // Backgroud Function - Pol2
-  bkg = new TF1("fBkg", "[0]+[1]*x+[2]*x^2", mlow, mup);
+  if(!bkg)
+    bkg = new TF1("fBkg", "[0]+[1]*x+[2]*x^2", mlow, mup);
   bkg->SetLineColor(kGreen);
   bkg->SetLineWidth(2);
   bkg->SetLineStyle(2);
   bkg->SetNpx(1000);
 
   // Total function for fitting
+  if(!total)
   total = new TF1("fTot","fJpsi+fBkg", mlow, mup);
   total->SetParNames("A", "#alpha", "n", "#sigma", "#mu",
     "a0", "a1", "a2");
@@ -130,13 +133,17 @@ int ExtractSignal(TH1* invmass, Double_t mlow = 1.5, Double_t mup = 4.5){
   total->SetLineWidth(3);
   total->SetNpx(1000);
     // Jpsi parameter
-  total->SetParameter("A", 116);
-  total->SetParLimits(0, 0., 1000.);
+  const Double_t MASS_JPSI = 3.096; // GeV/c^2
+  Double_t pseudo_peak = invmass->GetBinContent(invmass->FindBin(MASS_JPSI)); // Signal pseudo-peak
+  total->SetParameter("A", pseudo_peak);
+  total->SetParLimits(0, 0., 3 * pseudo_peak);
   total->SetParameter("#alpha", 0.3);
+  total->SetParLimits(1, 0., 10.);
   total->SetParameter("n", 1.);
   total->SetParLimits(2, 0., 100.);
-  total->SetParameter("#sigma", 0.04);
-  total->SetParameter("#mu", 3.1);
+  total->SetParameter("#sigma", 0.1);
+  total->SetParLimits(3, 0., 1.);
+  total->SetParameter("#mu", MASS_JPSI);
   total->SetParLimits(4, mlow, mup);
     // Background parameter
   total->SetParameter("a0", 250.);
@@ -151,7 +158,10 @@ int ExtractSignal(TH1* invmass, Double_t mlow = 1.5, Double_t mup = 4.5){
   invmass->SetMarkerColor(kBlue);
   invmass->SetMarkerStyle(20);
     // Fit with bin integration and return fit result
-  invmass->Fit(total, "IS", "", mlow, mup);
+  TFitResultPtr fitResult = invmass->Fit(total, "IS", "", mlow, mup);
+    // TODO: Should repeat for N times?
+  if(fitResult->Status())
+    fitResult = invmass->Fit(total, "IS", "", mlow, mup);
     // Draw marker & error bar (with empty bins)
   invmass->Draw("PE0");
 
@@ -160,7 +170,7 @@ int ExtractSignal(TH1* invmass, Double_t mlow = 1.5, Double_t mup = 4.5){
     invmass->GetXaxis()->SetRangeUser(1.5,4.5);
     invmass->GetXaxis()->SetTitle("M_{e^{+}e^{-}} (GeV/c^{2})");
     // Y axis -> 2 * HIST max
-    invmass->GetYaxis()->SetRangeUser(0, 
+    invmass->GetYaxis()->SetRangeUser(0.1, 
       2 * invmass->GetBinContent(invmass->GetMaximumBin()));
     invmass->GetYaxis()->SetTitle(
       Form("N_{pairs} / %.3f GeV/c^{2}", invmass->GetBinWidth(1)));
