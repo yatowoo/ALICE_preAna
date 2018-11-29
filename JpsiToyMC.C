@@ -2,7 +2,7 @@
 //#define DEBUG
 
 // Require ROOT6
-#include "TLorentzVector.h"
+#include<TLorentzVector.h>
 
 // Use Float_t instead of double to save disk size
 const Float_t MASS_JPSI = 3.096; // GeV/c^2
@@ -67,6 +67,84 @@ TLorentzVector getJpsi(TF1 *fPt, Float_t pt_lower, Float_t pt_upper)
   return parent;
 }
 // END - Methods from LIU, Zhen (刘圳)
+
+// Draw histogram for MC result
+int DrawMC(TString fileName, Int_t nEvent = 1000){
+  TFile* fdata = NULL;
+  if(_file0) // after 'root -l *.root
+    fdata = _file0;
+  else{
+    fdata = new TFile(fileName, "READ");
+    if(!fdata->IsOpen()){
+      cout << "[X] ERROR - File not found : " << fileName << endl;
+      return -1;
+    }
+  }// Create file object
+
+  TTree* event = (TTree*)(fdata->Get("event"));
+  TLorentzVector* jpsi = new TLorentzVector;
+  TLorentzVector* eplus = new TLorentzVector;
+  TLorentzVector* eminus = new TLorentzVector;
+  event->SetBranchAddress("jpsi", &jpsi);
+  event->SetBranchAddress("eplus", &eplus);
+  event->SetBranchAddress("eminus", &eminus);
+
+  // EP = eplus, EM = eminus
+    // J/psi - pt, eta, phi
+  TH1* hJpsi_pt = new TH1F("hJpt", "J/#psi p_{t} distribution;p_{t} (GeV/c);N_{J/#psi} / (.05 GeV/c)", 600, 0, 30.);
+  TH1* hJpsi_eta = new TH1F("hJeta", "J/#psi #eta distribution;#eta;N_{J/#psi} / 0.01", 1000, -5., 5.);
+  TH1* hJpsi_phi = new TH1F("hJphi", "J/#psi #phi distribution;#phi (rad);N_{J/#psi} / 0.01 rad", 1000, -5., 5.);
+    // Eplus - pt, eta, phi
+  TH1* hEP_pt = new TH1F("hEPpt", "e^{+} p_{t} distribution;p_{t} (GeV/c);N_{e^{+}} / (0.05 GeV/c)", 600, 0, 30.);
+  TH1* hEP_eta = new TH1F("hEPeta", "e^{+} #eta distribution;#eta;N_{e^{+}} / 0.01", 1000, -5., 5.);
+  TH1* hEP_phi = new TH1F("hEPphi", "e^{+} #phi distribution;#phi (rad);N_{e^{+}} / 0.01 rad", 1000, -5., 5.);
+    // Eminus - pt, eta, phi
+  TH1* hEM_pt = new TH1F("hEMpt", "e^{-} p_{t} distribution;p_{t} (GeV/c);N_{e^{-}} / (.05 GeV/c)", 600, 0, 30.);
+  TH1* hEM_eta = new TH1F("hEMeta", "e^{-} #eta distribution;#eta;N_{e^{-}} / 0.01", 1000, -5., 5.);
+  TH1* hEM_phi = new TH1F("hEMphi", "e^{-} #phi distribution;#phi (rad);N_{e^{-}} / 0.01 rad", 1000, -5., 5.);
+    // Pair - EPpt vs EMpt, OpeningAngle
+  TH2* hPair_pt = new TH2F("hPairPt", "e^{+}e^{-} p_{t} correlation;p_{t}(e^{+}) (GeV/c);p_{t}(e^{-}) (GeV/c);N_{pair}", 600, 0, 30., 600, 0, 30.);
+  TH1* hPair_angle = new TH1F("hPairAngle", "e^{+}e^{-} Opening Angle;angle (rad);N_{pair} / 0.01 rad", 500, 0, 5.);
+
+  if(nEvent >= event->GetEntries())
+    nEvent = event->GetEntries();
+  for(Int_t iev = 0; iev < nEvent; iev++){
+    event->GetEntry(iev);
+    hJpsi_pt->Fill(jpsi->Pt());
+    hJpsi_eta->Fill(jpsi->Eta());
+    hJpsi_phi->Fill(jpsi->Phi());
+    hEP_pt->Fill(eplus->Pt());
+    hEP_eta->Fill(eplus->Eta());
+    hEP_phi->Fill(eplus->Phi());
+    hEM_pt->Fill(eminus->Pt());
+    hEM_eta->Fill(eminus->Eta());
+    hEM_phi->Fill(eminus->Phi());
+    hPair_pt->Fill(eplus->Pt(), eminus->Pt());
+    hPair_angle->Fill(eplus->Angle(eminus->Vect()));
+    if(iev % (nEvent / 25) == 0){
+      cout << "[-] Progress : " << int(iev/1./nEvent*100) 
+        << "% (" << iev << "/" << nEvent << ")" << endl;
+    }
+  }// Event loop
+  cout << endl;
+  //fdata->Close();
+
+  TFile* result = new TFile("JpsiToyMC_result.root","RECREATE");
+  hJpsi_pt->Write();
+  hJpsi_eta->Write();
+  hJpsi_phi->Write();
+  hEP_pt->Write();
+  hEP_eta->Write();
+  hEP_phi->Write();
+  hEM_pt->Write();
+  hEM_eta->Write();
+  hEM_phi->Write();
+  hPair_pt->Write();
+  hPair_angle->Write();
+  result->Close();
+
+  return 0;
+}
 
 int JpsiToyMC(Int_t nEvent = 1e3, TString output_dir = "."){
   gRandom->SetSeed(time(NULL));
