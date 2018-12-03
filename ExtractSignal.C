@@ -32,7 +32,46 @@ TPaveText* yatoPaveText(){
 }
 
 // Input mass range for estimation of signal & background
-int SelectSignalRegion(Double_t mlow, Double_t mup, Double_t width = 0.04){
+int SelectSignalRegion(TH1* InvMass, Double_t mlow, Double_t mup, Double_t width = 0.04){
+  /*
+  * Draw signal region
+  */
+  if(!InvMass){
+    cout << "[X] ERROR - Histogram in NULL" << endl;
+    return 1;
+  }
+  // Lines
+  Double_t ymin = InvMass->GetMinimum();
+  Double_t ymax = InvMass->GetMaximum();
+  TLine* yLine = new TLine(mlow, ymin, mlow, ymax);
+  yLine->SetLineColor(kRed);
+  yLine->SetLineStyle(3);
+  yLine->Draw("same");
+  yLine = (TLine*)(yLine->Clone("lJpsiHigh"));
+  yLine->SetX1(mup);
+  yLine->SetX2(mup);
+  yLine->Draw("same");
+  // Fill area
+  TF1* fRegion = new TF1("fRegion", total->GetName(), mlow, mup);
+  TGraph* gr = new TGraph(fRegion);
+  gr->SetName("grRegion");
+  gr->SetFillColor(kRed);
+  gr->SetFillStyle(3004);
+  gr->Draw("same B");
+
+  
+  /*
+  * Count data points
+  */
+  Int_t xBinLow = InvMass->FindBin(mlow);
+  Int_t xBinHigh = InvMass->FindBin(mup);
+  Double_t errData = 0.0;
+  Double_t Ndata = InvMass->IntegralAndError(xBinLow, xBinHigh, errData);
+
+
+  /*
+  * Integral errors
+  */
   // Denominator check
   if( width < 1e-6 ){
     cout << "[+] WARNNING - Bin width given may be too small : " << width << endl;
@@ -74,13 +113,18 @@ int SelectSignalRegion(Double_t mlow, Double_t mup, Double_t width = 0.04){
   cout << "--> Signal:     " << Njpsi << " +/- " << errJpsi << endl;
   cout << "--> Background: " << Nbkg << " +/- " << errBkg << endl;
 
-  // Build result pave on canvas
+
+  /*
+  * Build result pave on canvas
+  */
   auto pTxt = yatoPaveText();
     // J/psi mass range
   auto entry = pTxt->AddText(
     Form("M_{J/#psi} #in [%.2f, %.2f] (GeV/c^{2})", mlow, mup));
   entry->SetTextSize(0.03);
   entry->SetTextFont(62); // Helvetica (Bold)
+  entry = pTxt->AddText(
+    Form("Data:     %.0f #pm %.0f", Ndata, errData));
   entry = pTxt->AddText(
     Form("Total:    %.0f #pm %.0f", Ntotal, errTot));
   entry = pTxt->AddText(
@@ -175,7 +219,8 @@ int ExtractSignal(TH1* invmass, Double_t mlow = 1.5, Double_t mup = 4.5){
     invmass->GetYaxis()->SetTitle(
       Form("N_{pairs} / %.3f GeV/c^{2}", invmass->GetBinWidth(1)));
       // Show fit parameters
-    gStyle->SetOptFit(1111);
+    gStyle->SetOptFit(0000);
+    gStyle->SetOptStat(0);
     gPad->Update();
   }
 

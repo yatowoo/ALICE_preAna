@@ -112,7 +112,7 @@ int ExtractRF(TFile* resultFile, TString cutDef = "RAW"){
   yLgd->SetTextAlign(12);
   yLgd->SetTextFont(42);
   yLgd->SetTextSize(0.04);
-  yLgd->AddEntry(hMB,  Form("MB  (kINT7) - %.1f M", nMB/1e6));
+  yLgd->AddEntry(hMB,  Form("MB   (kINT7)  - %.1f M", nMB/1e6));
   yLgd->AddEntry(hEG1, Form("EG1 (7 GeV) - %.1f M", nEG1/1e6));
   yLgd->AddEntry(hEG2, Form("EG2 (5 GeV) - %.1f M", nEG2/1e6));
   yLgd->Draw("same");
@@ -120,9 +120,14 @@ int ExtractRF(TFile* resultFile, TString cutDef = "RAW"){
   // Calculate Rejection Factor
   TH1* rf1 = (TH1*)(hEG1->Clone());
   rf1->SetName("hRF1");
+  rf1->SetMarkerStyle(2);
+  rf1->SetMarkerColor(kBlue);
   rf1->Divide(hMB);
+  
   TH1* rf2 = (TH1*)(hEG2->Clone());
   rf2->SetName("hRF2");
+  rf2->SetMarkerStyle(4);
+  rf2->SetMarkerColor(kGreen);
   rf2->Divide(hMB);
 
   cEMCalE = new  TCanvas("c2", "Rejection Factor", 800, 600);
@@ -130,11 +135,11 @@ int ExtractRF(TFile* resultFile, TString cutDef = "RAW"){
   cEMCalE->SetGridx(1);
   cEMCalE->SetGridy(1);
 
-  rf1->Draw();
+  rf1->Draw("EP");
   rf1->GetYaxis()->SetMoreLogLabels(kTRUE);
   rf1->GetYaxis()->SetTitle("Rejection Factor");
   rf1->GetYaxis()->SetTimeOffset(1.50);
-  rf2->Draw("same");
+  rf2->Draw("same EP");
 
   yLgd= new TLegend(0.13,0.60,0.49, 0.88, "", "brNDC");
   yLgd->SetName("rfLgd");
