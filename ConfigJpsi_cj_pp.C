@@ -177,7 +177,6 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 
 	//Pt cut ----------------------------------------------------------
 	AliDielectronVarCuts *pt = new AliDielectronVarCuts("ptCut", "pt cut");
-	pt->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
 	pt->AddCut(AliDielectronVarManager::kKinkIndex0, 0.);
 
 	//AOD additions since there are no AliESDtrackCuts -----------------
@@ -192,20 +191,23 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 			pt->AddCut(AliDielectronVarManager::kImpactParZ, -3., 3.);
 			pt->AddCut(AliDielectronVarManager::kITSLayerFirstCls, 0., 4.);
 			pt->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 4.);
-			pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
 			
 			switch (cutDefinition)
 			{
 				case kEMCal_strict10:
+					pt->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
 					pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -1.0, 3.0);
 					break;
 				case kEMCal_strict15:
+					pt->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
 					pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -1.5, 3.0);
 					break;
 				case kEMCal_strict20:
+					pt->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
 					pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.0, 3.0);
 					break;
 				case kEMCal_rigid:
+					pt->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
 					pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -1.5, 3.0);
 					// Exclude pion, kaon, proton
 			  	pt->AddCut(AliDielectronVarManager::kTPCnSigmaPio, -10.0, 1.0, kTRUE);
@@ -214,14 +216,19 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 					break;
 				case kPt03:
 					pt->AddCut(AliDielectronVarManager::kPt, 0.3, 1e30);
+					pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
 					break;
 				case kPt05:
 					pt->AddCut(AliDielectronVarManager::kPt, 0.5, 1e30);
+					pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
 					break;
 				case kPt08:
 					pt->AddCut(AliDielectronVarManager::kPt, 0.8, 1e30);
+					pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
 					break;
 				default:
+					pt->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
+					pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
 					break;
 			}
 		}
@@ -459,7 +466,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	/*
 	// Histogram for Track
 	*/
-	histos->UserHistogram("Track", "Pt", "Pt;Pt [GeV];#tracks", 200, 0, 40., AliDielectronVarManager::kPt, kTRUE);
+	histos->UserHistogram("Track", "Pt", "Pt;Pt [GeV];#tracks", 800, 0, 40., AliDielectronVarManager::kPt, kTRUE);
 	/*
   histos->UserHistogram("Track","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",160,-0.5,159.5,AliDielectronVarManager::kNclsTPC,kTRUE);
   histos->UserHistogram("Track","TPCchi2Cl","Chi-2/Clusters TPC;Chi2/ncls number clusteres;#tracks",100,0,10,AliDielectronVarManager::kTPCchi2Cl,kTRUE);
@@ -485,16 +492,16 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 												100, -1, 1, 144, 0, TMath::TwoPi(), AliDielectronVarManager::kEta, AliDielectronVarManager::kPhi, kTRUE);
 
 	histos->UserHistogram("Track", "dEdx_P", "dEdx vs PinTPC;P [GeV];TPC signal (a.u.);#tracks",
-												200, 0.2, 20., 800, 20., 200., AliDielectronVarManager::kPIn, AliDielectronVarManager::kTPCsignal, kTRUE);
+												800, 0., 40., 800, 20., 200., AliDielectronVarManager::kPIn, AliDielectronVarManager::kTPCsignal, kTRUE);
 
 	histos->UserHistogram("Track", "dEdx_Pt", "dEdx vs Pt;Pt [GeV];TPC signal (a.u.);#tracks",
-												200, 0.2, 20., 800, 20., 200., AliDielectronVarManager::kPt, AliDielectronVarManager::kTPCsignal, kTRUE);
+												800, 0., 40., 800, 20., 200., AliDielectronVarManager::kPt, AliDielectronVarManager::kTPCsignal, kTRUE);
 
 	histos->UserHistogram("Track", "TPCnSigmaEle_P", "n#sigma_{e}(TPC) vs P_{in} TPC;P_{in} [GeV];n#sigma_{e}(TPC);#tracks",
 												200, 0.2, 20., 800, -12., 12., AliDielectronVarManager::kPIn, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
 
 	histos->UserHistogram("Track", "TPCnSigmaEle_Pt", "n#sigma_{e}(TPC) vs Pt;Pt [GeV];n#sigma_{e}(TPC);#tracks",
-												200, 0.2, 20., 800, -12., 12., AliDielectronVarManager::kPt, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
+												800, 0., 40., 800, -12., 12., AliDielectronVarManager::kPt, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
 
 	histos->UserHistogram("Track", "TPCnSigmaEle_Phi", "n#sigma_{e}(TPC) vs #phi;#phi [rad];n#sigma_{e}(TPC);#tracks",
 												200, 0., 2 * TMath::Pi(), 800, -12., 12., AliDielectronVarManager::kPhi, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
@@ -539,19 +546,19 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	histos->UserHistogram("Track", "EMCALnSigmaEle_EoverP", "n#sigma_{e}(EMCal) vs E/p;E/p;n#sigma_{e}(EMCal);#tracks",
 												200, 0., 2., 100, -12., 12., AliDielectronVarManager::kEMCALEoverP, AliDielectronVarManager::kEMCALnSigmaEle, kTRUE);
 	histos->UserHistogram("Track", "EoverP_pt", "E/p ratio vs Pt;Pt (GeV/c);E/p;#tracks",
-												40, 0., 40., 200, 0., 2., AliDielectronVarManager::kPt, AliDielectronVarManager::kEMCALEoverP, kTRUE);
+												800, 0., 40., 200, 0., 2., AliDielectronVarManager::kPt, AliDielectronVarManager::kEMCALEoverP, kTRUE);
 
 	/*
 	// Histograms for Pair
 	*/
 	histos->UserHistogram("Pair", "OpeningAngle2D", "Opening angle vs p_{T} ;p_{T} (GeV/c); angle",
-												40, 0., 40., 2000, -10., 10., AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
+												800, 0., 40., 2000, -10., 10., AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle);
 
 	histos->UserHistogram("Pair", "InvMass", "Inv.Mass;Inv. Mass [GeV];#pairs/40MeV",
 												375, 0.0, 15.0, AliDielectronVarManager::kM);
 
 	histos->UserHistogram("Pair", "InvMass2D", "Inv.Mass;Pt [GeV]; Inv. Mass [GeV]",
-												40, 0., 40., 375, 0, 15.0, AliDielectronVarManager::kPt, AliDielectronVarManager::kM);
+												800, 0., 40., 375, 0, 15.0, AliDielectronVarManager::kPt, AliDielectronVarManager::kM);
 
 	//InvMass versus Proper time
 	histos->UserHistogram("Pair", "InvMass2D_ProperTime", "InvMass vs. ProperTime;pseudoproper-decay-length[cm]; Inv. Mass [GeV]",
