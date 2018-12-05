@@ -69,8 +69,9 @@ TLorentzVector getJpsi(TF1 *fPt, Float_t pt_lower, Float_t pt_upper)
 // END - Methods from LIU, Zhen (刘圳)
 
 // Draw histogram for MC result
-int DrawMC(TString fileName, Int_t nEvent = 1000){
+int DrawMC(TString fileName, TString resultFileName = "JpsiToyMC_result.root", Int_t nEvent = 1000){
   TFile* fdata = NULL;
+  TFile* _file0 = (TFile*)gDirectory;
   if(_file0) // after 'root -l *.root
     fdata = _file0;
   else{
@@ -129,7 +130,7 @@ int DrawMC(TString fileName, Int_t nEvent = 1000){
   cout << endl;
   //fdata->Close();
 
-  TFile* result = new TFile("JpsiToyMC_result.root","RECREATE");
+  TFile* result = new TFile(resultFileName,"RECREATE");
   hJpsi_pt->Write();
   hJpsi_eta->Write();
   hJpsi_phi->Write();
@@ -146,22 +147,22 @@ int DrawMC(TString fileName, Int_t nEvent = 1000){
   return 0;
 }
 
-int JpsiToyMC(Int_t nEvent = 1e3, TString output_dir = "."){
+int JpsiToyMC(Int_t nEvent = 1e3, Double_t PT_LOWER = 0., Double_t PT_UPPER = 30., TString output_dir = "."){
   gRandom->SetSeed(time(NULL));
 
   // Au-Au 200 GeV/c
   //TF1 *fPt = new TF1("fPt", "(3.4948*TMath::Power(TMath::Exp((-0.395305)*x)+x/2.91793,(-8.46161)))*4*TMath::Pi()*x", 0, 20);
-  const Double_t PT_LOWER = 0.;
-  const Double_t PT_UPPER = 30.; // GeV/c
   TF1* fPt = new TF1("fLevy", LevyFCN, PT_LOWER, PT_UPPER, 4);
-  // pp 13TeV - Levy fit with ALICE-2017
   fPt->SetParName(0, "dN/dy");
   fPt->SetParName(1, "C");
   fPt->SetParName(2, "n");
   fPt->SetParName(3, "m_{0}");
+    // pp 13TeV - Levy fit with ALICE-2017
   fPt->SetParameters(7413., 7.79, 0.7053, MASS_JPSI);
 
-  TFile* f = new TFile(output_dir+"/JpsiDecay.root", "RECREATE");
+  TFile* f = new TFile(
+    Form("%s/JpsiDecay_%0.f-%0.f.root", output_dir.Data(), PT_LOWER, PT_UPPER), 
+    "RECREATE");
   TTree* tree = new TTree("event", "J/psi decay event");
   TLorentzVector* jpsi = new TLorentzVector;
   TLorentzVector& obj_jpsi = *jpsi;
