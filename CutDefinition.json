@@ -1,0 +1,95 @@
+{
+  "LHC16l":{
+    "EMCal":{
+      "Track":{
+        "Kink": false,
+        "ITScluster": "SPD",
+        "RefitITS": true,
+        "RefitTPC": true,
+        "pT": 1.0,
+        "TPCnClusters": [85, 160],
+        "DcaXY": [-1.0, 1.0],
+        "DcaZ": [-3.0, 3.0],
+        "Eta": [-0.9, 0.9],
+        "1stITScluster": [0, 4],
+        "TPCchi2cls": [0.0, 4.0],
+        "TPCnSigmaElectron": [-2.25, 3.0]
+      },
+      "Pair":{
+        "Mass": [0.0, 15.0],
+        "Rapidity": [-0.9, 0.9],
+        "pT": 7.0
+      },
+      "Leg":{
+        "Type": "kAnyLeg",
+        "EoverP": [0.8, 1.3],
+        "EMCalE": 7,
+        "DCalPhi": [4.377, 5.7071]
+      }
+    },
+    "EMCal_loose":{
+      "Ref": "EMCal",
+      "Leg":{
+        "EoverP": [0.75, 1.35]
+      }
+    },
+    "EMCal_strict1.5":{
+      "Ref": "EMCal",
+      "Track":{
+        "TPCnSigmaElectron": [-1.5, 3.0]
+      }
+    },
+    "EMCal_strict1.0":{
+      "Ref": "EMCal",
+      "Track":{
+        "TPCnSigmaElectron": [-1.0, 3.0]
+      }
+    },
+    "EMCal_strict2.0":{
+      "Ref": "EMCal",
+      "Track":{
+        "TPCnSigmaElectron": [-2.0, 3.0]
+      }
+    },
+    "EMCal_rigid":{
+      "Ref": "EMCal",
+      "Track":{
+        "TPCnSigmaElectron": [-1.5, 3.0],
+        "ExcludeHadron": true,
+        "TPCnSigmaPion": [-30000.0, 1.0],
+        "TPCnSigmaKaon": [-30000.0, 3.0],
+        "TPCnSigmaProton": [-30000.0, 3.0]
+      }
+    },
+    "Pt_0.3":{
+      "Ref": "EMCal",
+      "Track":{
+        "pT": 0.3
+      }
+    },
+    "Pt_0.5":{
+      "Ref": "EMCal",
+      "Track":{
+        "pT": 0.5
+      }
+    },
+    "Pt_0.8":{
+      "Ref": "EMCal",
+      "Track":{
+        "pT": 0.8
+      }
+    },
+    "ALL":{},
+    "RAW":{
+      "Ref": "EMCal",
+      "Track":{
+        "pT": 0.0,
+        "TPCnClusters": [1, 160],
+        "1stITScluster": [0, 6],
+        "DcaXY": [-5, 5],
+        "DcaZ": [-10, 10],
+        "TPCnSigmaElectron": [-10, 10]
+      }
+    }
+  }
+}
