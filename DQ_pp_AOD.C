@@ -11,5 +11,5 @@ void DQ_pp_AOD(){
   // LHC16l_pass1 - 8 run ( 181125 job exceed 1500 quota)
   DATASETS["16l_pass1_181125"] = "259117  259099  259096  259091  259090  259088  258964  258962";
   // LHC16l_pass1 - 1 run (with EMCal) for test
-  DATASETS["16l_pass1"] = "259888"; 
+  DATASETS["16l_pass1_test"] = "259888"; 
 }

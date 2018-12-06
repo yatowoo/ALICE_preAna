@@ -7,7 +7,7 @@ void AddMCSignals(AliDielectron *diele);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 
-TString namesDieleData = ("TPConly;EMCal;EMCal_loose;EMCal_strict1.0;EMCal_strict1.5;EMCal_strict2.0;EMCal_rigid;Pt_0.3;Pt_0.5;Pt_0.8;RAW;ALL"); //add EMCal2 to have a loose E/p cut!
+TString namesDieleData = "TPConly;EMCal;EMCal_loose;EMCal_strict1.0;EMCal_strict1.5;EMCal_strict2.0;EMCal_rigid;Pt_0.3;Pt_0.5;Pt_0.8;RAW;ALL"; //add EMCal2 to have a loose E/p cut!
 enum CutType {kTPConly, kEMCal, kEMCal_loose, kEMCal_strict10, kEMCal_strict15, kEMCal_strict20, kEMCal_rigid, kPt03, kPt05, kPt08, kRAW, kALL, kCutN = 12};
 
 TObjArray *arrNamesDieleData = namesDieleData.Tokenize(";");
@@ -26,7 +26,7 @@ AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_
 	{
 		name = arrNamesDieleData->At(cutDefinition)->GetName();
 	}
-	AliDielectron *diele = new AliDielectron(Form("%s", name.Data()),
+	AliDielectron *diele = new AliDielectron(Form("%d_cut%s", trigger_index, name.Data()),
 																					 Form("Track cuts: %s", name.Data()));
 
 	//profile

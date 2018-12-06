@@ -19,7 +19,8 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 	Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
 
 	//create task and add it to the manager
-	AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("MultiDie");
+	AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron(
+		Form("MultiDie_%d", trigger_index));
 	mgr->AddTask(task);
 
 	///======
