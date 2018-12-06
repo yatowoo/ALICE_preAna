@@ -52,9 +52,9 @@ AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_
 	}
 	// cut setup
 	SetupEventCutsDieleFilter(diele, cutDefinition, isAOD, MultSel);
-	if(cutDefinition < nDie -1) // not for ALL
+	if(cutDefinition < kALL) // not for ALL
 		SetupTrackCutsDieleData(diele, cutDefinition, isAOD, isMC);
-	if(cutDefinition < nDie -2) // not for RAW / ALL
+	if(cutDefinition < kRAW) // not for RAW / ALL
 		SetupPairCutsDieleData(diele, cutDefinition, isAOD, trigger_index, isMC);
 
 	//
@@ -185,7 +185,7 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	if (isAOD)
 	{
 		// Standard cut
-		if(cutDefinition < nDie - 2){ // not RAW / ALL
+		if(cutDefinition < kRAW){ // not RAW / ALL
 			pt->AddCut(AliDielectronVarManager::kNclsTPC, 85., 160.);
 			pt->AddCut(AliDielectronVarManager::kEta, -0.9, 0.9);
 			pt->AddCut(AliDielectronVarManager::kImpactParXY, -1., 1.);
@@ -256,7 +256,7 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 	pairCut->AddCut(AliDielectronVarManager::kY, -0.9, 0.9);
 	pairCut->AddCut(AliDielectronVarManager::kPt, 1, 50.);
 
-	if (cutDefinition > 0 && cutDefinition < nDie - 2)
+	if (cutDefinition > kTPConly && cutDefinition < kRAW)
 	{
 		//EMC7 trigger
 		if (trigger_index == 1)
@@ -272,7 +272,7 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 
 	diele->GetPairFilter().AddCuts(pairCut);
 
-	if (cutDefinition > 0 && cutDefinition != kEMCal_loose) // EMCal & EMCal_strict
+	if (cutDefinition > kTPConly && cutDefinition != kEMCal_loose) // EMCal & EMCal_strict
 	{
 		AliDielectronVarCuts *mycut = new AliDielectronVarCuts("CutEMCAL", "cut for EMCal");
 		mycut->AddCut(AliDielectronVarManager::kEMCALEoverP, 0.8, 1.3);
