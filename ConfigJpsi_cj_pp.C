@@ -26,7 +26,7 @@ AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_
 	{
 		name = arrNamesDieleData->At(cutDefinition)->GetName();
 	}
-	AliDielectron *diele = new AliDielectron(Form("%d_cut%s", trigger_index, name.Data()),
+	AliDielectron *diele = new AliDielectron(Form("%s", name.Data()),
 																					 Form("Track cuts: %s", name.Data()));
 
 	//profile
