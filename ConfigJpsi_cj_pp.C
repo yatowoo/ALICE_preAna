@@ -1,6 +1,23 @@
+#include "Rtypes.h"
+#include "TString.h"
+#include "TObjArray.h"
+#include "TFile.h"
+#include "TProfile.h"
+
+#include "AliDielectron.h"
+#include "AliESDtrackCuts.h"
+#include "AliDielectronVarManager.h"
+#include "AliDielectronVarCuts.h"
+#include "AliDielectronTrackCuts.h"
+#include "AliDielectronPairLegCuts.h"
+#include "AliDielectronHistos.h"
+#include "AliDielectronCF.h"
+#include "AliDielectronSignalMC.h"
+
+
 void SetupEventCutsDieleFilter(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Int_t MultSel);
 void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Bool_t isMC);
-void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Bool_t isMC);
+void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Int_t trigger_index, Bool_t isMC);
 void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD);
 void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Bool_t isMC);
 void AddMCSignals(AliDielectron *diele);
@@ -14,7 +31,7 @@ TObjArray *arrNamesDieleData = namesDieleData.Tokenize(";");
 
 const Int_t nDie = arrNamesDieleData->GetEntries();
 
-AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_t trigger_index = 0, Bool_t isMC, Int_t MultSel = 0)
+AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_t trigger_index = 0, Bool_t isMC = kFALSE, Int_t MultSel = 0)
 {
 	//
 	// Setup the instance of AliDielectron
@@ -562,7 +579,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 
 	//InvMass versus Proper time
 	histos->UserHistogram("Pair", "InvMass2D_ProperTime", "InvMass vs. ProperTime;pseudoproper-decay-length[cm]; Inv. Mass [GeV]",
-												120, -0.3., 0.3, 375, 0, 15.0, AliDielectronVarManager::kPseudoProperTime, AliDielectronVarManager::kM);
+												120, -0.3, 0.3, 375, 0, 15.0, AliDielectronVarManager::kPseudoProperTime, AliDielectronVarManager::kM);
 
 	histos->UserHistogram("Pair", "Rapidity", "Rapidity;Rapidity;#pairs",
 												50, -1., 1., AliDielectronVarManager::kY);
@@ -570,7 +587,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 												50, 0., 3.15, AliDielectronVarManager::kOpeningAngle);
 
 	histos->UserHistogram("Pair", "PseudoProperTime", "Pseudoproper decay length; pseudoproper-decay-length[cm];Entries/40#mum",
-												150, -0.3., 0.3, AliDielectronVarManager::kPseudoProperTime);
+												150, -0.3, 0.3, AliDielectronVarManager::kPseudoProperTime);
 
 	//histos->UserHistogram("Pair","SPDTracklets","SPDTracklets;SPDTracklets;Entries",300,0.,300.,AliDielectronVarManager::kCentralitySPDTracklets);
 	//histos->UserHistogram("Pair","kNaccTrcklts10Corr","kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries",300,0.,300.,AliDielectronVarManager::kNaccTrcklts10Corr);

@@ -1,7 +1,15 @@
 // Mode : local, test, full, merge, final
+
+#include "AliAnalysisAlien.h"
+#include "AliAnalysisManager.h"
+#include "AliAODHandler.h"
+#include "AliVEventHandler.h"
+#include "AliAnalysisTaskPIDResponse.h"
+
+#include "DQ_pp_AOD.C"
+
 void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2", TString datasets="16l_pass1", TString task_name="jpsiTask")
 {
-    gROOT->LoadMacro("DQ_pp_AOD.C");
     DQ_pp_AOD();
     TString runlist = DATASETS[datasets];
     if(!runlist.Length()){
@@ -17,25 +25,23 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AliAnalysisManager *mgr = new AliAnalysisManager("PPJpsiAnalysis");
 
     // Configuration from LEGO train DQ_pp_AOD
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODHandler.C");
-    AliVEventHandler *handler = AddAODHandler();
+    AliVEventHandler *handler = reinterpret_cast<AliVEventHandler*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODHandler.C"));
 
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODOutputHandler.C");
-    AliVEventHandler *handler = AddAODOutputHandler();
+    handler = reinterpret_cast<AliVEventHandler*>(gInterpreter->ExecuteMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODOutputHandler.C"));
     AliAnalysisManager::SetGlobalStr("kJetDeltaAODName", "");
     AliAnalysisManager::SetGlobalInt("kFillAODForRun", 0);
     AliAnalysisManager::SetGlobalInt("kFilterAOD", 0);
     ((AliAODHandler *)handler)->SetFillAODforRun(kFALSE);
     ((AliAODHandler *)handler)->SetNeedsHeaderReplication();
     // TASK -Physics selectrion
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    AddTaskPhysicsSelection(kFALSE, kTRUE);
+    TMacro PhysSelection(gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"));
+    PhysSelection.Exec("kFALSE, kTRUE");
     // TASK - PID response
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse();
+    TMacro PIDadd(gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
+    AliAnalysisTaskPIDResponse* PIDresponseTask = reinterpret_cast<AliAnalysisTaskPIDResponse*>(PIDadd.Exec());
     // TASK - EG2 from C. Jahnke
-    gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    AddTask_cjahnke_JPsi("16l", 4, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
+    TMacro cjEG2(gSystem->ExpandPathName("AddTask_cjahnke_JPsi.C"));
+    cjEG2.Exec("\"16l\", 4, kFALSE, \"ConfigJpsi_cj_pp\", kFALSE, kTRUE, 0");
 
     if(!mgr->InitAnalysis()) return;
     mgr->SetDebugLevel(2);

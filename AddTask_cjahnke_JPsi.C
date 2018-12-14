@@ -1,4 +1,15 @@
-AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index = 0, Bool_t isMC, TString cfg = "ConfigJpsi_cj_pp", Bool_t alienconf = kFALSE, Bool_t localconf = kFALSE, Int_t MultSel = 0)
+#include "Rtypes.h"
+#include "TString.h"
+
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskMultiDielectron.h"
+#include "AliDielectron.h"
+#include "AliDielectronEventCuts.h"
+#include "AliAnalysisDataContainer.h"
+
+#include "ConfigJpsi_cj_pp.C"
+
+AliAnalysisTask *AddTask_cjahnke_JPsi(TString period = "11d", Int_t trigger_index = 0, Bool_t isMC = kFALSE, TString cfg = "ConfigJpsi_cj_pp", Bool_t alienconf = kFALSE, Bool_t localconf = kFALSE, Int_t MultSel = 0)
 {
 	//get the current analysis manager
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -56,7 +67,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 		else
 		{
 			printf("ERROR: couldn't copy file %s/%s.C from grid \n", alienPath.Data(), cfg.Data());
-			return;
+			return NULL;
 		}
 	}
 	// add config to path
@@ -70,7 +81,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 	// load dielectron configuration file (only once)
 	if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi_cj_pp"))
 	{
-		gROOT->LoadMacro(configFile.Data());
+		;//gROOT->LoadMacro(configFile.Data());
 	}
 
 	//add dielectron analysis with different cuts to the task
