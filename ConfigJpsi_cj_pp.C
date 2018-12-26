@@ -14,6 +14,8 @@ TObjArray *arrNamesDieleData = namesDieleData.Tokenize(";");
 
 const Int_t nDie = arrNamesDieleData->GetEntries();
 
+Bool_t isFilter = kFALSE;
+
 AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_t trigger_index = 0, Bool_t isMC, Int_t MultSel = 0)
 {
 	//
@@ -399,7 +401,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	//Track classes
 	//EMCal tracks are same as TPC tracks... only changes the pair cuts
 	//to fill also track info from 2nd event loop until 2
-	if (cutDefinition != kEMCal && cutDefinition != kEMCal_loose) // TPC, EMCal & EMCal_loose use the same track cut
+	if ( isFilter || (cutDefinition != kEMCal && cutDefinition != kEMCal_loose)) // TPC, EMCal & EMCal_loose use the same track cut
 	{
 		for (Int_t i = 0; i < 2; ++i)
 		{
@@ -432,7 +434,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	// Histogram for Event
 	// -- ONLY in RAW cut definition
 	*/
-	if (cutDefinition == kRAW) // RAW
+	if (isFilter || cutDefinition == kRAW) // RAW
 	{
 		histos->AddClass("Event");
 		histos->UserHistogram("Event", "VtxZ", "Vertex Z;Z[cm]", 500, -40., 40., AliDielectronVarManager::kZvPrim);

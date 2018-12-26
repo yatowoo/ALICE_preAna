@@ -35,7 +35,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AddTaskPIDResponse();
     // TASK - Jpsi Filter for Nano AOD Tree
     gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
-    AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp("ConfigJpsi_cj_pp.C", kFALSE, AliVEvent::kEMCEGA, "16l", kFALSE, kFALSE);
+    AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp("ConfigJpsi_cj_pp.C", AliVEvent::kEMCEGA);
     if(taskJPSIfilter){
         cout << "[-] INFO - Create J/psi filter task, output file: AliAOD.Dielectron.root" << endl;
         mgr->RegisterExtraFile("AliAOD.Dielectron.root");

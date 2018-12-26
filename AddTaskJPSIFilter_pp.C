@@ -1,8 +1,7 @@
 AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
-				      Bool_t gridconf=kFALSE,
-				      ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,
-				      TString period="",
-				      Bool_t storeLS = kFALSE,
+				      ULong64_t triggers=AliVEvent::kINT7,
+				      TString period="LHC16l",
+				      Bool_t storeLS = kTRUE,
 				      Bool_t hasMC_aod = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -29,55 +28,56 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
     //mgr->GetGridHandler()->SetMergeAOD(kTRUE);
   }
   
-	if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi_nano_PbPb"))
-	{
-		gROOT->LoadMacro(cfg.Data());
-	}
+  //Create task and add it to the analysis manager
+  AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
+  task->SetTriggerMask(triggers);
+  if (!hasMC) task->UsePhysicsSelection();
 
-  AliDielectron *jpsi=ConfigJpsi_cj_pp(0, kTRUE, 3, hasMC, 0);
-  
+	//Add event filter
+	AliDielectronEventCuts *eventCuts = new AliDielectronEventCuts("eventCuts", "Vertex Track && |vtxZ|<10 && ncontrib>0");
+	if (isAOD)
+		eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+	eventCuts->SetRequireVertex();
+	eventCuts->SetMinVtxContributors(1);
+	eventCuts->SetVertexZ(-10., 10.);
+	task->SetEventFilter(eventCuts);
+
+  // Add dielectron analysis
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi_nano_PbPb")){
+		gROOT->LoadMacro(cfg.Data());
+    isFilter = kTRUE;
+	}
+  // From trigger to trigger_index - adapt to CJ's configuration
+  Int_t trigger_index = 0;
+  switch (triggers)
+  {
+    case AliVEvent::kINT7:
+      trigger_index = 100;
+      break;
+    case AliVEvent::kEMCEGA:
+      trigger_index = 4; // for EG2, also cover all EG1?
+    default:
+      trigger_index = 0;
+      break;
+  }
+  Int_t cutDefinition = 1; // Default EMCal from CJ's LEGO train
+  AliDielectron *jpsi=ConfigJpsi_cj_pp(cutDefinition, kTRUE, trigger_index, hasMC, 0);
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event
     AliAODHandler *aodHandler = (AliAODHandler*)mgr->GetOutputEventHandler();
     aodHandler->SetCreateNonStandardAOD();
     aodHandler->SetNeedsHeaderReplication();
-    if(!period.Contains("LHC10h")) aodHandler->SetNeedsTOFHeaderReplication();
+    if(!period.Contains("LHC10h"))
+      aodHandler->SetNeedsTOFHeaderReplication();
     aodHandler->SetNeedsVZEROReplication();
-    /*aodHandler->SetNeedsTracksBranchReplication();
-    aodHandler->SetNeedsCaloClustersBranchReplication();
-    aodHandler->SetNeedsVerticesBranchReplication();
-    aodHandler->SetNeedsCascadesBranchReplication();
-    aodHandler->SetNeedsTrackletsBranchReplication();
-    aodHandler->SetNeedsPMDClustersBranchReplication();
-    aodHandler->SetNeedsJetsBranchReplication();
-    aodHandler->SetNeedsFMDClustersBranchReplication();
-    //aodHandler->SetNeedsMCParticlesBranchReplication();
-    aodHandler->SetNeedsDimuonsBranchReplication();*/
-    //    if(hasMC) aodHandler->SetNeedsV0sBranchReplication();
-    if(hasMC) aodHandler->SetNeedsMCParticlesBranchReplication();
+    if(hasMC)
+      aodHandler->SetNeedsMCParticlesBranchReplication();
     jpsi->SetHasMC(hasMC);
   }
-  
-  //Create task and add it to the analysis manager
-  AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
-  task->SetTriggerMask(triggers);
-  //  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral+AliVEvent::kEMCEGA+AliVEvent::kEMCEJE);
-  //  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
-  if (!hasMC) task->UsePhysicsSelection();
-
-  //   //Add event filter
-  //   AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-  //   if(!hasMC) eventCuts->SetRequireVertex();
-  //   if (isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  //   eventCuts->SetMinVtxContributors(1);
-  //   eventCuts->SetVertexZ(-10.,10.);
-  //   eventCuts->SetCentralityRange(0.0,90.0);
-  //   task->SetEventFilter(eventCuts);
-
   task->SetDielectron(jpsi);
-  if(storeLS) task->SetStoreLikeSignCandidates(storeLS);
   task->SetCreateNanoAODs(kTRUE);
   task->SetStoreHeader(kFALSE);
+  task->SetStoreLikeSignCandidates(storeLS);
   task->SetStoreEventsWithSingleTracks(kFALSE);
   mgr->AddTask(task);
 
