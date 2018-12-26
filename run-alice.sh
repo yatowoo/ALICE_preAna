@@ -4,14 +4,23 @@
 
 ALICE_OUTPUT_DIR=$1
 ALICE_DATA_DIR=$2
-ALICE_DATA_NO=$(printf "%03d" $3)
-ALICE_DATA_FILE=$2/AliAOD_$ALICE_DATA_NO.root
+let "no=$3+1"
+ALICE_DATA_NO=$(printf "%03d" $no)
+ALICE_DATA_FILE=$2/AOD_$ALICE_DATA_NO.root
 ALICE_OUTPUT_DIR=$1/$ALICE_DATA_NO
 
-source /data2/ytwu/.bashrc
+set -v
 mkdir -p $ALICE_OUTPUT_DIR
-cp runAnlaysis.C AddTaskJPSIFilter_pp.C ConfigJpsi_cj_pp.C $ALICE_OUTPUT_DIR/
+cp runAnalysis.C AddTaskJPSIFilter_pp.C ConfigJpsi_cj_pp.C DQ_pp_AOD.C $ALICE_OUTPUT_DIR/
 cd $ALICE_OUTPUT_DIR/
-ln -s $ALICE_DATA_FILE AliAOD_input.root
-cdali
-aliroot -l -b -x -q runAnlaysis.C 1>run.out 2>run.err
+ln -s -f $ALICE_DATA_FILE AliAOD_input.root
+export PATH=/data2/ytwu/Software/bin:$PATH
+export ALIBUILD_WORK_DIR=/data2/ytwu/Software/ALICE/sw
+eval "`alienv shell-helper`"
+alienv q --no-refresh | grep -v "latest"
+alienv load AliPhysics/0-1 --no-refresh
+alienv list --no-refresh
+aliroot -l -b -x -q runAnalysis.C 1>run.out 2>run.err
+alienv unload AliPhysics/0-1 --no-refresh
+alienv list --no-refresh
+set +v
