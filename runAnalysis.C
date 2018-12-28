@@ -33,12 +33,11 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     // TASK - PID response
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse();
-    // TASK - Jpsi Filter for Nano AOD Tree
-    gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
-    AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp("ConfigJpsi_cj_pp.C", AliVEvent::kEMCEGA);
-    if(taskJPSIfilter){
-        cout << "[-] INFO - Create J/psi filter task, output file: AliAOD.Dielectron.root" << endl;
-        mgr->RegisterExtraFile("AliAOD.Dielectron.root");
+    // TASK - Basic Jet Finder task
+    gROOT->LoadMacro("AddTaskEmcalJetTriggerQA.C");
+    AliAnalysisTaskSE *taskJet = AddTaskEmcalJetTriggerQA("tracks", "caloClusters", 0.4, 0.15, 0.3, 0, "", "", "V0A", AliVEvent::kINT7, 10., "", "LHC16l", "pp");
+    if(taskJet){
+        cout << "[-] INFO - Create jet finder task" << endl;
     }else{
         cout << "[X] ERROR - Fail to create J/psi filter task." << endl;
         exit(1);
