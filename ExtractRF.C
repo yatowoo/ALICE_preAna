@@ -45,12 +45,18 @@ TH1* GetEMCalE(TFile* resultFile, Int_t trigger_index, TString cutDef){
     ->FindObject(cutDef)
     ->FindObject("Track_ev1+")->FindObject("EMCal_E"));
 
-  if(!hEMCalE){
+  TH1* hEMCalE_minus = (TH1*)(triggerDirObj
+    ->FindObject(cutDef)
+    ->FindObject("Track_ev1-")->FindObject("EMCal_E"));
+  
+	if(!hEMCalE && !hEMCalE_minus){
     cout << "[X] ERROR - Object not found : " << rootDir << "/" << triggerDir << "/" + cutDef << "/Track_ev1+/EMCal_E" << endl;
     return NULL;
   }
-  else
+  else{
+		hEMCalE->Add(hEMCalE_minus);
     return hEMCalE;
+	}
 
   return NULL;
 }
