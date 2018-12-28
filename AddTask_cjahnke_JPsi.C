@@ -24,50 +24,9 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 	mgr->AddTask(task);
 
 	///======
-	// set config file name
-
-	TString configFile("");
-	if (cfg.IsNull())
-		cfg = "ConfigJpsi_cj_pp";
-
-	// the different paths
-	TString alienPath("alien:///alice/cern.ch/user/c/cjahnke/MacrosJPsi");
-	TString alirootPath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI");
-
-	// >>> local config
-	if (localconf)
-	{
-		configFile = "ConfigJpsi_cj_pp.C";
-	}
-
-	// >>> aliroot config
-	else if (!alienconf)
-	{
-		configFile = alirootPath.Data();
-	}
-	// >>> alien config
-	else
-	{
-		if (!gSystem->Exec(Form("alien_cp %s/%s.C .", alienPath.Data(), cfg.Data())))
-		{
-			configFile = gSystem->pwd();
-			printf("Not sure if copy or not from alien!!!\n");
-		}
-		else
-		{
-			printf("ERROR: couldn't copy file %s/%s.C from grid \n", alienPath.Data(), cfg.Data());
-			return;
-		}
-	}
-	// add config to path
-	if (!localconf)
-	{
-		configFile += "/";
-		configFile += cfg.Data();
-		configFile += ".C";
-	}
-
-	// load dielectron configuration file (only once)
+	// Load configuration file
+	// ======
+	TString configFile("ConfigJpsi_cj_pp.C");
 	if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi_cj_pp"))
 	{
 		gROOT->LoadMacro(configFile.Data());
@@ -87,21 +46,17 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 		cout << "[+] DEBUG - AliDielectron Address in task: " << jpsi << endl;
 	}
 
-	//moved to configuration file
 	//Add event filter
-
 	AliDielectronEventCuts *eventCuts = new AliDielectronEventCuts("eventCuts", "Vertex Track && |vtxZ|<10 && ncontrib>0");
 	if (isAOD)
 		eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
 	eventCuts->SetRequireVertex();
 	eventCuts->SetMinVtxContributors(1);
 	eventCuts->SetVertexZ(-10., 10.);
-	//eventCuts->SetCentralityRange(0.0,80.0);
 	task->SetEventFilter(eventCuts);
+	task->SetRejectPileup();
 
-	//pileup rejection
-	//task->SetRejectPileup();
-
+	// Select event by trigger
 	if (!isMC)
 	{
 		//if(trigger_index == 0)task->SetTriggerMask(AliVEvent::kINT7);
@@ -132,11 +87,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 			task->SetFiredTriggerName("EG1");
 		}
 
-		//=============================================================================
-		//=============================================================================
-		//=============================================================================
 		//DCal triggers
-
 		if (trigger_index == 30)
 		{
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
@@ -154,10 +105,6 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
 			task->SetFiredTriggerName("DG1");
 		}
-
-		//=============================================================================
-		//=============================================================================
-		//=============================================================================
 
 		if (trigger_index == 5)
 		{

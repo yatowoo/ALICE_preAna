@@ -7,7 +7,7 @@
 
 EXE = run-alice.sh
 ALICE_DATA_DIR = /data2/ytwu/DATA/exp/ALICE/LHC16l_259888_pass1_AOD
-ALICE_OUTPUT_DIR = /data2/ytwu/LOG/ALICE_JpsiFilter
+ALICE_OUTPUT_DIR = /data2/ytwu/LOG/ALICE_EMCalQA
 OUTPUT_DIR = $(ALICE_OUTPUT_DIR)
 
 N_JOBS = 73
