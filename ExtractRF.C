@@ -82,17 +82,17 @@ int ExtractRF(TFile* resultFile, TString cutDef = "RAW"){
   TF1* fcn = new TF1("fNev","[0]",0, 50);
 
   // Normalized EMCal cluster energy
-  fcn->SetParameter(0, nMB);
+  fcn->SetParameter(0, nMB * hMB->GetBinWidth(1));
   hMB->SetName("hMB");
   hMB->SetLineColor(kRed);
   hMB->Divide(fcn);
   
-  fcn->SetParameter(0, nEG1);
+  fcn->SetParameter(0, nEG1 * hEG1->GetBinWidth(1));
   hEG1->SetName("hEG1");
-  hEG2->SetLineColor(kBlue);
+  hEG1->SetLineColor(kBlue);
   hEG1->Divide(fcn);
 
-  fcn->SetParameter(0, nEG2);
+  fcn->SetParameter(0, nEG2 * hEG2->GetBinWidth(1));
   hEG2->SetName("hEG2");
   hEG2->SetLineColor(kGreen);
   hEG2->Divide(fcn);
