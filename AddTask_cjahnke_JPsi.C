@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index = 0, Bool_t isMC, TString cfg = "ConfigJpsi_cj_pp", Bool_t alienconf = kFALSE, Bool_t localconf = kFALSE, Int_t MultSel = 0)
+AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index = 0, Bool_t isMC, TString cfg = "ConfigJpsi_cj_pp", Bool_t alienconf = kFALSE, Bool_t localconf = kFALSE)
 {
 	//get the current analysis manager
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -35,7 +35,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 	//add dielectron analysis with different cuts to the task
 	for (Int_t i = 0; i < nDie; ++i)
 	{ //nDie defined in config file
-		AliDielectron *jpsi = ConfigJpsi_cj_pp(i, isAOD, trigger_index, isMC, MultSel);
+		AliDielectron *jpsi = ConfigJpsi_cj_pp(i, isAOD, trigger_index, isMC);
 		if (isAOD)
 			jpsi->SetHasMC(isMC);
 		if (jpsi)
@@ -139,15 +139,15 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 	//create output container
 
 	AliAnalysisDataContainer *cOutputHist1 =
-			mgr->CreateContainer(Form("cjahnke_QA_%d_cent%d", trigger_index, MultSel), TList::Class(), AliAnalysisManager::kOutputContainer,
+			mgr->CreateContainer(Form("cjahnke_QA_%d", trigger_index), TList::Class(), AliAnalysisManager::kOutputContainer,
 													 containerName.Data());
 
 	AliAnalysisDataContainer *cOutputHist2 =
-			mgr->CreateContainer(Form("cjahnke_CF_%d_cent%d", trigger_index, MultSel), TList::Class(), AliAnalysisManager::kOutputContainer,
+			mgr->CreateContainer(Form("cjahnke_CF_%d", trigger_index), TList::Class(), AliAnalysisManager::kOutputContainer,
 													 containerName.Data());
 
 	AliAnalysisDataContainer *cOutputHist3 =
-			mgr->CreateContainer(Form("cjahnke_EventStat_%d_cent%d", trigger_index, MultSel), TH1D::Class(), AliAnalysisManager::kOutputContainer,
+			mgr->CreateContainer(Form("cjahnke_EventStat_%d", trigger_index), TH1D::Class(), AliAnalysisManager::kOutputContainer,
 													 containerName.Data());
 
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

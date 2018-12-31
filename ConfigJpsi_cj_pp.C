@@ -1,4 +1,3 @@
-void SetupEventCutsDieleFilter(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Int_t MultSel);
 void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Bool_t isMC);
 void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Bool_t isMC);
 void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD);
@@ -20,7 +19,7 @@ const Int_t nDie = arrNamesDieleData->GetEntries();
 //
 Bool_t isFilter = kFALSE;
 
-AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_t trigger_index = 0, Bool_t isMC, Int_t MultSel = 0)
+AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_t trigger_index = 0, Bool_t isMC)
 {
 	//
 	// Setup the instance of AliDielectron
@@ -57,7 +56,6 @@ AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_
 		printf(" Add %d MC signals \n", diele->GetMCSignals()->GetEntriesFast());
 	}
 	// cut setup
-	SetupEventCutsDieleFilter(diele, cutDefinition, isAOD, MultSel);
 	if(cutDefinition < kALL) // not for ALL
 		SetupTrackCutsDieleData(diele, cutDefinition, isAOD, isMC);
 	if(cutDefinition < kRAW) // not for RAW / ALL
@@ -92,72 +90,6 @@ AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_
  */
 
 	return diele;
-}
-
-//______________________________________________________________________________________
-void SetupEventCutsDieleFilter(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Int_t MultSel)
-{
-
-	//   // Setup the event cuts
-	/*
-	AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
-	if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-	eventCuts->SetRequireVertex();
-	eventCuts->SetMinVtxContributors(1);
-	eventCuts->SetVertexZ(-10.,10.);
-		//eventCuts->SetCentralityRange(0.0,80.0);
-		//task->SetEventFilter(eventCuts);
-	 */
-
-	AliDielectronVarCuts *Mult = new AliDielectronVarCuts("Mult", "kNaccTrcklts10Corr cut");
-	if (MultSel == 1)
-	{
-		Mult->AddCut(AliDielectronVarManager::kNaccTrcklts10Corr, 1., 14.99);
-	}
-	if (MultSel == 2)
-	{
-		Mult->AddCut(AliDielectronVarManager::kNaccTrcklts10Corr, 15., 24.99);
-	}
-	if (MultSel == 3)
-	{
-		Mult->AddCut(AliDielectronVarManager::kNaccTrcklts10Corr, 25., 34.99);
-	}
-	if (MultSel == 4)
-	{
-		Mult->AddCut(AliDielectronVarManager::kNaccTrcklts10Corr, 35., 44.99);
-	}
-	if (MultSel == 5)
-	{
-		Mult->AddCut(AliDielectronVarManager::kNaccTrcklts10Corr, 45., 155.0);
-	}
-
-	//V0 as centrality estimator
-	if (MultSel == 6)
-	{
-		Mult->AddCut(AliDielectronVarManager::kMultV0, 1, 75.);
-	}
-	if (MultSel == 7)
-	{
-		Mult->AddCut(AliDielectronVarManager::kMultV0, 76, 150.);
-	}
-	if (MultSel == 8)
-	{
-		Mult->AddCut(AliDielectronVarManager::kMultV0, 151., 225.);
-	}
-	if (MultSel == 9)
-	{
-		Mult->AddCut(AliDielectronVarManager::kMultV0, 226., 300.);
-	}
-	if (MultSel == 10)
-	{
-		Mult->AddCut(AliDielectronVarManager::kMultV0, 301., 680.);
-	}
-	if (MultSel == 11)
-	{
-		Mult->AddCut(AliDielectronVarManager::kMultV0, 1, 1000.);
-	}
-
-	diele->GetEventFilter().AddCuts(Mult);
 }
 
 //______________________________________________________________________________________
