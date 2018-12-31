@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index = 0, Bool_t isMC, TString cfg = "ConfigJpsi_cj_pp", Bool_t alienconf = kFALSE, Bool_t localconf = kFALSE)
+AliAnalysisTask *AddTask_cjahnke_JPsi(Int_t trigger_index = 0, Bool_t isMC = kFALSE)
 {
 	//get the current analysis manager
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -14,7 +14,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 	}
 
 	//Do we have an MC handler?
-	Bool_t hasMC = (mgr->GetMCtruthEventHandler() != 0x0);
+	Bool_t hasMC = isMC && (mgr->GetMCtruthEventHandler() != NULL);
 
 	Bool_t isAOD = mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class();
 
@@ -26,24 +26,19 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 	///======
 	// Load configuration file
 	// ======
-	TString configFile("ConfigJpsi_cj_pp.C");
 	if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi_cj_pp"))
 	{
-		gROOT->LoadMacro(configFile.Data());
+		gROOT->LoadMacro("ConfigJpsi_cj_pp.C");
 	}
 
 	//add dielectron analysis with different cuts to the task
 	for (Int_t i = 0; i < nDie; ++i)
 	{ //nDie defined in config file
-		AliDielectron *jpsi = ConfigJpsi_cj_pp(i, isAOD, trigger_index, isMC);
+		AliDielectron *jpsi = ConfigJpsi_cj_pp(i, isAOD, trigger_index, hasMC);
 		if (isAOD)
-			jpsi->SetHasMC(isMC);
+			jpsi->SetHasMC(hasMC);
 		if (jpsi)
-		{
 			task->AddDielectron(jpsi);
-		}
-		// DEBUG - Find AliDielectron
-		cout << "[+] DEBUG - AliDielectron Address in task: " << jpsi << endl;
 	}
 
 	//Add event filter
@@ -57,7 +52,7 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(char *period = "11d", Int_t trigger_index 
 	task->SetRejectPileup();
 
 	// Select event by trigger
-	if (!isMC)
+	if (!hasMC)
 	{
 		//if(trigger_index == 0)task->SetTriggerMask(AliVEvent::kINT7);
 		if (trigger_index == 0)
