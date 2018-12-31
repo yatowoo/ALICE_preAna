@@ -54,71 +54,52 @@ AliAnalysisTask *AddTask_cjahnke_JPsi(Int_t trigger_index = 0, Bool_t isMC = kFA
 	// Select event by trigger
 	if (!hasMC)
 	{
-		//if(trigger_index == 0)task->SetTriggerMask(AliVEvent::kINT7);
-		if (trigger_index == 0)
-			task->SelectCollisionCandidates(AliVEvent::kINT7);
-
-		//if(trigger_index == 1)task->SetTriggerMask(AliVEvent::kEMC7);
-		if (trigger_index == 1)
-			task->SelectCollisionCandidates(AliVEvent::kEMC7);
-		if (trigger_index == 2)
+		if(trigger_index == 0)
+			task->SetTriggerMask(AliVEvent::kINT7);
+		else if (trigger_index == 1)
+			task->SetTriggerMask(AliVEvent::kEMC7);
+		else if (trigger_index == 2)
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
-
-		if (trigger_index == 3)
+		else if (trigger_index == 3)
 		{
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
 			task->SetFiredTriggerName("EG1");
 		}
-		if (trigger_index == 4)
+		else if (trigger_index == 4)
 		{
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
 			task->SetFiredTriggerName("EG2");
 		}
-
 		//for 16k which has a different threshold:
-		if (trigger_index == 6)
+		else if (trigger_index == 6)
 		{
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
 			task->SetFiredTriggerName("EG1");
 		}
-
 		//DCal triggers
-		if (trigger_index == 30)
+		else if (trigger_index == 30)
 		{
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
 			task->SetFiredTriggerName("DG1");
 		}
-		if (trigger_index == 40)
+		else if (trigger_index == 40)
 		{
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
 			task->SetFiredTriggerName("DG2");
 		}
-
 		//for 16k which has a different threshold:
-		if (trigger_index == 60)
+		else if (trigger_index == 60)
 		{
 			task->SetTriggerMask(AliVEvent::kEMCEGA);
 			task->SetFiredTriggerName("DG1");
 		}
-
-		if (trigger_index == 5)
+		else if (trigger_index == 5)
 		{
 			task->SetTriggerMask(AliVEvent::kAny);
-			TString triggerClass = "kHighMultV0";
-			if (!triggerClass.IsNull())
-				task->SetFiredTriggerName(triggerClass.Data());
-			//task->SetFiredTriggerName("HMV0");
+			task->SetFiredTriggerName("HMV0");
 		}
-
-		if (trigger_index == 50)
-		{
+		else if (trigger_index == 50)
 			task->SetTriggerMask(AliVEvent::kHighMultV0);
-		}
-
-		if (trigger_index == 100)
-		{
-			task->SetTriggerMask(AliVEvent::kINT7);
-		}
 
 		//use this line for data, otherwise the physics selection is ignored by my task...
 		task->UsePhysicsSelection();

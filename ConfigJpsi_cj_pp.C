@@ -55,32 +55,30 @@ AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_
 		AddMCSignals(diele);
 		printf(" Add %d MC signals \n", diele->GetMCSignals()->GetEntriesFast());
 	}
-	// cut setup
+
+	// Cuts Setup
 	if(cutDefinition < kALL) // not for ALL
 		SetupTrackCutsDieleData(diele, cutDefinition, isAOD, isMC);
 	if(cutDefinition < kRAW) // not for RAW / ALL
 		SetupPairCutsDieleData(diele, cutDefinition, isAOD, trigger_index, isMC);
 
-	//
-
-	// histogram setup
-	// only if an AliDielectronHistos object is attached to the
-	// dielelectron framework histograms will be filled
-	//
-
+	// Histogram Setup
 	InitHistogramsDieleData(diele, cutDefinition, isAOD);
 	if (isMC)
 	{
 		InitCFDieleData(diele, cutDefinition, isAOD, isMC);
 	}
 
-	//   AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
-	//   rot->SetIterations(20);
-	//   rot->SetConeAnglePhi(TMath::Pi()/2);
-	//   rot->SetStartAnglePhi(TMath::Pi()/2);
-	//   diele->SetTrackRotator(rot);
+	// Track Rotator
+	/*
+	AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
+	rot->SetIterations(20);
+	rot->SetConeAnglePhi(TMath::Pi()/2);
+	rot->SetStartAnglePhi(TMath::Pi()/2);
+	diele->SetTrackRotator(rot);
+	*/
 
-	// mixing
+	// Event Mixing
 	/*
   AliDielectronMixingHandler *mix=new AliDielectronMixingHandler;
   mix->AddVariable(AliDielectronVarManager::kZvPrim, 100,-10.,10.);
@@ -170,12 +168,11 @@ void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t is
 		//EMC7 trigger
 		if (trigger_index == 1)
 			pairCut->AddCut(AliDielectronVarManager::kPt, 3, 50.);
-
-		if (trigger_index == 3)
+		else if (trigger_index == 3)
 			pairCut->AddCut(AliDielectronVarManager::kPt, 7, 50.);
-		if (trigger_index == 4 || trigger_index == 40)
+		else if (trigger_index == 4 || trigger_index == 40)
 			pairCut->AddCut(AliDielectronVarManager::kPt, 5, 50.);
-		if (trigger_index == 6 || trigger_index == 60)
+		else if (trigger_index == 6 || trigger_index == 60)
 			pairCut->AddCut(AliDielectronVarManager::kPt, 11, 50.);
 	}
 
