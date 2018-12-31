@@ -9,8 +9,14 @@ AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 //
 // Cut Definitions
 //
-TString namesDieleData = "TPConly;EMCal;RAW;ALL"; 
-enum CutType {kTPConly, kEMCal, kRAW, kALL, kCutN = 4, kEMCal_loose};
+TString namesDieleData = "EMCal;EMCal_loose;EMCal_strict";
+enum CutType
+{
+	kEMCal,
+	kEMCal_loose,
+	kEMCal_strict,
+	kCutN = 3
+};
 TObjArray *arrNamesDieleData = namesDieleData.Tokenize(";");
 const Int_t nDie = arrNamesDieleData->GetEntries();
 
@@ -31,8 +37,7 @@ AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_
 	{
 		name = arrNamesDieleData->At(cutDefinition)->GetName();
 	}
-	AliDielectron *diele = new AliDielectron(Form("%s", name.Data()),
-																					 Form("Track cuts: %s", name.Data()));
+	AliDielectron *diele = new AliDielectron(Form("%s", name.Data()), Form("Track cuts: %s", name.Data()));
 
 	//profile
 
@@ -57,10 +62,8 @@ AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_
 	}
 
 	// Cuts Setup
-	if(cutDefinition < kALL) // not for ALL
-		SetupTrackCutsDieleData(diele, cutDefinition, isAOD, isMC);
-	if(cutDefinition < kRAW) // not for RAW / ALL
-		SetupPairCutsDieleData(diele, cutDefinition, isAOD, trigger_index, isMC);
+	SetupTrackCutsDieleData(diele, cutDefinition, isAOD, isMC);
+	SetupPairCutsDieleData(diele, cutDefinition, isAOD, trigger_index, isMC);
 
 	// Histogram Setup
 	InitHistogramsDieleData(diele, cutDefinition, isAOD);
@@ -104,153 +107,117 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	else
 	{
 		AliDielectronTrackCuts *trackCuts = new AliDielectronTrackCuts("trackCuts", "trackCuts");
-		// if(cutDefinition!=2)trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
 		trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 		trackCuts->SetRequireTPCRefit(kTRUE);
 		trackCuts->SetRequireITSRefit(kTRUE);
 		diele->GetTrackFilter().AddCuts(trackCuts);
 	}
 
-	//Pt cut ----------------------------------------------------------
-	AliDielectronVarCuts *pt = new AliDielectronVarCuts("ptCut", "pt cut");
-	pt->AddCut(AliDielectronVarManager::kKinkIndex0, 0.);
-
-	//AOD additions since there are no AliESDtrackCuts -----------------
+	// Track cuts for electron PID
+	AliDielectronVarCuts *ePID = new AliDielectronVarCuts("ePidCut", "Track cuts for electron PID");
+	ePID->AddCut(AliDielectronVarManager::kKinkIndex0, 0.);
+	//AOD additional cuts
 	//
 	if (isAOD)
 	{
-		// Standard cut
-		if(cutDefinition < kRAW){ // not RAW / ALL
-			pt->AddCut(AliDielectronVarManager::kNclsTPC, 85., 160.);
-			pt->AddCut(AliDielectronVarManager::kEta, -0.9, 0.9);
-			pt->AddCut(AliDielectronVarManager::kImpactParXY, -1., 1.);
-			pt->AddCut(AliDielectronVarManager::kImpactParZ, -3., 3.);
-			pt->AddCut(AliDielectronVarManager::kITSLayerFirstCls, 0., 4.);
-			pt->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 4.);
-			
-			pt->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
-			pt->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
+		// Track quality cuts
+		ePID->AddCut(AliDielectronVarManager::kNclsTPC, 85., 160.);
+		ePID->AddCut(AliDielectronVarManager::kEta, -0.9, 0.9);
+		ePID->AddCut(AliDielectronVarManager::kImpactParXY, -1., 1.);
+		ePID->AddCut(AliDielectronVarManager::kImpactParZ, -3., 3.);
+		ePID->AddCut(AliDielectronVarManager::kITSLayerFirstCls, 0., 4.);
+		ePID->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 4.);
+		// PID cuts
+		if( cutDefinition == kEMCal){
+			ePID->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
+			ePID->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.25, 3.0);
 		}
-
-		if( cutDefinition == kRAW ){ // RAW
-			pt->AddCut(AliDielectronVarManager::kPt, 0., 1e30);
-			pt->AddCut(AliDielectronVarManager::kNclsTPC, 1., 160.);
-			pt->AddCut(AliDielectronVarManager::kEta, -0.9, 0.9);
-			pt->AddCut(AliDielectronVarManager::kImpactParXY, -5., 5.);
-			pt->AddCut(AliDielectronVarManager::kImpactParZ, -10., 10.);
-			pt->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0., 100.);		
-		}// RAW
+		else if( cutDefinition == kEMCal_loose){
+			ePID->AddCut(AliDielectronVarManager::kPt, 0.7, 1e30);
+			ePID->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -3.0, 3.0);
+		}
+		else if( cutDefinition == kEMCal_strict){
+			ePID->AddCut(AliDielectronVarManager::kPt, 1.0, 1e30);
+			ePID->AddCut(AliDielectronVarManager::kTPCnSigmaEle, -2.0, 3.0);
+			// Exclude hadrons
+			ePID->AddCut(AliDielectronVarManager::kTPCnSigmaPio, -100.0, 1.0, kTRUE);
+			ePID->AddCut(AliDielectronVarManager::kTPCnSigmaKao, -100.0, 3.0, kTRUE);
+			ePID->AddCut(AliDielectronVarManager::kTPCnSigmaPro, -100.0, 3.0, kTRUE);
+		}
 	}
 
-	diele->GetTrackFilter().AddCuts(pt);
+	diele->GetTrackFilter().AddCuts(ePID);
 }
 
 //______________________________________________________________________________________
 void SetupPairCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD, Int_t trigger_index, Bool_t isMC)
 {
-	// Setup the pair cuts
+	/*
+		Jpsi cuts
+	*/
 	//Invariant mass and rapidity selection
-	Double_t gCut = 0.050; // default
-
-	//AliDielectronVarCuts *gammaCut=new AliDielectronVarCuts("gammaCut","gammaCut");
-	//if(cutDefinition==1)	gammaCut->AddCut(AliDielectronVarManager::kM,0.,gCut);
-	//if(cutDefinition>0)	diele->GetPairPreFilter().AddCuts(gammaCut);
-	//if(cutDefinition>0)	diele->SetPreFilterUnlikeOnly();
-
-	//Invariant mass and rapidity selection
-	AliDielectronVarCuts *pairCut = new AliDielectronVarCuts("0<M<5+|Y|<.9", "0<M<5 + |Y|<.9");
+	AliDielectronVarCuts *pairCut = new AliDielectronVarCuts("jpsiCuts", "1<M<5 + |Y|<.9");
 	pairCut->AddCut(AliDielectronVarManager::kM, 1.0, 5.0);
 	pairCut->AddCut(AliDielectronVarManager::kY, -0.9, 0.9);
-	pairCut->AddCut(AliDielectronVarManager::kPt, 1, 50.);
+	pairCut->AddCut(AliDielectronVarManager::kPt, 1, 1e30);
 
-	if (cutDefinition > kTPConly && cutDefinition < kRAW)
-	{
-		//EMC7 trigger
-		if (trigger_index == 1)
-			pairCut->AddCut(AliDielectronVarManager::kPt, 3, 50.);
-		else if (trigger_index == 3)
-			pairCut->AddCut(AliDielectronVarManager::kPt, 7, 50.);
-		else if (trigger_index == 4 || trigger_index == 40)
-			pairCut->AddCut(AliDielectronVarManager::kPt, 5, 50.);
-		else if (trigger_index == 6 || trigger_index == 60)
-			pairCut->AddCut(AliDielectronVarManager::kPt, 11, 50.);
-	}
+	//EMC7 - L0 trigger
+	if (trigger_index == 1)
+		pairCut->AddCut(AliDielectronVarManager::kPt, 1., 1e30);
+	// EMCEGA - L1 trigger
+	else if (trigger_index == 2)
+		pairCut->AddCut(AliDielectronVarManager::kPt, 1., 1e30);
+	// EMCEGA - EG1
+	else if (trigger_index == 3)
+		pairCut->AddCut(AliDielectronVarManager::kPt, 7, 1e30);
+	// EMCEGA - EG2
+	else if (trigger_index == 4 || trigger_index == 40)
+		pairCut->AddCut(AliDielectronVarManager::kPt, 5, 1e30);
+	// EMCEG2 - EG1
+	else if (trigger_index == 6 || trigger_index == 60)
+		pairCut->AddCut(AliDielectronVarManager::kPt, 11, 1e30);
 
 	diele->GetPairFilter().AddCuts(pairCut);
+	
+	/*
+		Leg cuts
+	*/
+	AliDielectronVarCuts *emcCut = new AliDielectronVarCuts("CutEMCAL", "Jpsi leg cuts for EMCal");
+	// E/p for electron
+	if( cutDefinition == kEMCal_loose)
+		emcCut->AddCut(AliDielectronVarManager::kEMCALEoverP, 0.75, 1.35);
+	else
+		emcCut->AddCut(AliDielectronVarManager::kEMCALEoverP, 0.8, 1.3);
 
-	if (cutDefinition > kTPConly && cutDefinition != kEMCal_loose) // EMCal & EMCal_strict
-	{
-		AliDielectronVarCuts *mycut = new AliDielectronVarCuts("CutEMCAL", "cut for EMCal");
-		mycut->AddCut(AliDielectronVarManager::kEMCALEoverP, 0.8, 1.3);
-		//trigger_index == 2 for both thresholds together, without thresholds separation (just cross check)
-		if (trigger_index == 3 || trigger_index == 2)
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 7, 50.);
-		else if (trigger_index == 4 || trigger_index == 40)
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 5, 50.);
-		//for 16k period, threshold at 10 GeV:
-		//Dcal have both thresholds at 10 GeV!!
-		//trigger 20 do not separate thresholds for dcal
-		else if (trigger_index == 6 || trigger_index == 60)
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 11, 50.);
-		//EMC7:
-		else if (trigger_index == 1)
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 3, 50.);
-		else
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 1, 50.);
+	// EMCal energy threshold
+	// EMC7 - L0 trigger (2.5 GeV - 2016)
+	// EMCEGA - L1 trigger, use L0 threshold for nano AOD filter
+	if (trigger_index == 1 || trigger_index == 2)
+		emcCut->AddCut(AliDielectronVarManager::kEMCALE, 3, 1e30);
+	// EMCEGA - EG1/DG1, LHC16 except 16k
+	else if (trigger_index == 3 || trigger_index == 30)
+		emcCut->AddCut(AliDielectronVarManager::kEMCALE, 7, 1e30);
+	// EMCEGA - EG2/DG2
+	else if (trigger_index == 4 || trigger_index == 40)
+		emcCut->AddCut(AliDielectronVarManager::kEMCALE, 5, 50.);
+	// EMCEGA - EG1/DG1 (16k)
+	else if (trigger_index == 6 || trigger_index == 60)
+		emcCut->AddCut(AliDielectronVarManager::kEMCALE, 11, 50.);
+	else
+		emcCut->AddCut(AliDielectronVarManager::kEMCALE, 1, 50.);
 
-		//dcal cut if using EG triggers
-		//if using EMCal trigger, it excludes if the tracks matches DCAL:
-		//(we don't want energy cut on DCAL if the trigger is on EMCal)
-		if (trigger_index == 2 || trigger_index == 3 || trigger_index == 4 || trigger_index == 6)
-			mycut->AddCut(AliDielectronVarManager::kPhi, 4.377, 5.7071, kTRUE); //kTRUE means to exclude!
+	// Exclude DCal for EG1/EG2
+	if ( trigger_index == 3 || trigger_index == 4 || trigger_index == 6)
+		emcCut->AddCut(AliDielectronVarManager::kPhi, 4.377, 5.7071, kTRUE); 
+	// Exclude EMCal for DG1/DG2
+	else if (trigger_index == 30 || trigger_index == 40 || trigger_index == 60)
+		emcCut->AddCut(AliDielectronVarManager::kPhi, 1.396, 3.2637, kTRUE);
 
-		//emcal cut if using DG triggers
-		if (trigger_index == 40 || trigger_index == 60)
-			mycut->AddCut(AliDielectronVarManager::kPhi, 1.396, 3.2637, kTRUE);
-
-		AliDielectronPairLegCuts *varpair = new AliDielectronPairLegCuts();
-		varpair->GetLeg1Filter().AddCuts(mycut);
-		varpair->GetLeg2Filter().AddCuts(mycut);
-		varpair->SetCutType(AliDielectronPairLegCuts::kAnyLeg);
-		diele->GetPairFilter().AddCuts(varpair);
-	}
-
-	if (cutDefinition == kEMCal_loose)
-	{
-		AliDielectronVarCuts *mycut = new AliDielectronVarCuts("CutEMCAL", "cut for EMCal");
-		mycut->AddCut(AliDielectronVarManager::kEMCALEoverP, 0.75, 1.35);
-		//trigger_index == 2 for both thresholds together, without thresholds separation (just cross check)
-		if (trigger_index == 3 || trigger_index == 2)
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 7, 50.);
-		else if (trigger_index == 4 || trigger_index == 40)
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 5, 50.);
-		//for 16k period, threshold at 10 GeV:
-		//Dcal have both thresholds at 10 GeV!!
-		//trigger 20 do not separate thresholds for dcal
-		else if (trigger_index == 6 || trigger_index == 60)
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 11, 50.);
-		//EMC7:
-		else if (trigger_index == 1)
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 3, 50.);
-		else
-			mycut->AddCut(AliDielectronVarManager::kEMCALE, 1, 50.);
-
-		//dcal cut if using EG triggers
-		//if using EMCal trigger, it excludes if the tracks matches DCAL:
-		//(we don't want energy cut on DCAL if the trigger is on EMCal)
-		if (trigger_index == 2 || trigger_index == 3 || trigger_index == 4 || trigger_index == 6)
-			mycut->AddCut(AliDielectronVarManager::kPhi, 4.377, 5.7071, kTRUE); //kTRUE means to exclude!
-
-		//emcal cut if using DG triggers
-		if (trigger_index == 40 || trigger_index == 60)
-			mycut->AddCut(AliDielectronVarManager::kPhi, 1.396, 3.2637, kTRUE);
-
-		AliDielectronPairLegCuts *varpair = new AliDielectronPairLegCuts();
-		varpair->GetLeg1Filter().AddCuts(mycut);
-		varpair->GetLeg2Filter().AddCuts(mycut);
-		varpair->SetCutType(AliDielectronPairLegCuts::kAnyLeg);
-		diele->GetPairFilter().AddCuts(varpair);
-	}
+	AliDielectronPairLegCuts *varpair = new AliDielectronPairLegCuts();
+	varpair->GetLeg1Filter().AddCuts(emcCut);
+	varpair->GetLeg2Filter().AddCuts(emcCut);
+	varpair->SetCutType(AliDielectronPairLegCuts::kAnyLeg);
+	diele->GetPairFilter().AddCuts(varpair);
 }
 
 //______________________________________________________________________________________
@@ -298,7 +265,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	//Track classes
 	//EMCal tracks are same as TPC tracks... only changes the pair cuts
 	//to fill also track info from 2nd event loop until 2
-	if ( isFilter || (cutDefinition != kEMCal && cutDefinition != kEMCal_loose)) // TPC, EMCal & EMCal_loose use the same track cut
+	if (isFilter || (cutDefinition != kEMCal && cutDefinition != kEMCal_loose)) // TPC, EMCal & EMCal_loose use the same track cut
 	{
 		for (Int_t i = 0; i < 2; ++i)
 		{
@@ -361,7 +328,6 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 		histos->UserHistogram("Event", "kMultV0C", "kMultV0;kMultV0;Entries", 1000, 0., 1000., AliDielectronVarManager::kMultV0C);
 	}
 
-
 	/*
 	// Histogram for Track
 	*/
@@ -379,9 +345,9 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 
 	//histos->UserHistogram("Track","SPDTracklets","SPDTracklets;SPDTracklets;Entries",300,0.,300.,AliDielectronVarManager::kCentralitySPDTracklets);
 	// histos->UserHistogram("Track","kNaccTrcklts10Corr","kNaccTrcklts10Corr;kNaccTrcklts10Corr;Entries",300,0.,300.,AliDielectronVarManager::kNaccTrcklts10Corr);
-	histos->UserHistogram("Track","TPCnCls","Number of Clusters TPC;TPC number clusteres;#tracks",160,0,160,AliDielectronVarManager::kNclsTPC,kTRUE);
+	histos->UserHistogram("Track", "TPCnCls", "Number of Clusters TPC;TPC number clusteres;#tracks", 160, 0, 160, AliDielectronVarManager::kNclsTPC, kTRUE);
 
-	histos->UserHistogram("Track","TPCchi2Cl","Chi-2/Clusters TPC;Chi2/ncls number clusteres;#tracks",100,0,10,AliDielectronVarManager::kTPCchi2Cl,kTRUE);
+	histos->UserHistogram("Track", "TPCchi2Cl", "Chi-2/Clusters TPC;Chi2/ncls number clusteres;#tracks", 100, 0, 10, AliDielectronVarManager::kTPCchi2Cl, kTRUE);
 
 	histos->UserHistogram("Track", "dXY", "dXY;dXY [cm];#tracks", 200, -5., 5., AliDielectronVarManager::kImpactParXY, kTRUE);
 
@@ -422,7 +388,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 
 	histos->UserHistogram("Track", "dEdx_EoverP", "dEdx vs E/p;E/P;TPC signal (a.u.);#tracks",
 												200, 0., 2., 800, 20., 200., AliDielectronVarManager::kEMCALEoverP, AliDielectronVarManager::kTPCsignal, kTRUE);
-	
+
 	histos->UserHistogram("Track", "nSigmaTPC_EMCal", "n#sigma_{e}(TPC vs EMCAL);n#sigma_{e}(EMCAL);n#sigma_{e}(TPC);#tracks",
 												200, -5., 5., 200, -12., 12., AliDielectronVarManager::kEMCALnSigmaEle, AliDielectronVarManager::kTPCnSigmaEle, kTRUE);
 	//histos->UserHistogram("Track","nSigmaEMCal_EoverP","NsigmaEmcal;EoverP;NSigmaEMCAL;E/P",100,0.,5.,200,-5.,5.,AliDielectronVarManager::kEMCALEoverP,AliDielectronVarManager::kEMCALnSigmaEle,kTRUE);
@@ -433,8 +399,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	histos->UserHistogram("Track", "EoverP", "EMCal E/p ratio;E/p;#Clusters",
 												200, 0., 2., AliDielectronVarManager::kEMCALEoverP, kTRUE);
 
-	histos->UserHistogram("Track","ITS_FirstCls","ITS First Cluster;Layer No. of ITS 1st cluster;#Entries",6,0.,6.,AliDielectronVarManager::kITSLayerFirstCls,kTRUE);
-
+	histos->UserHistogram("Track", "ITS_FirstCls", "ITS First Cluster;Layer No. of ITS 1st cluster;#Entries", 6, 0., 6., AliDielectronVarManager::kITSLayerFirstCls, kTRUE);
 
 	//Ecluster versus Phi to separate EMCal and DCal
 	histos->UserHistogram("Track", "EMCal_E_Phi", "Cluster energy vs. #phi; EMCal_E;Phi;#tracks",
