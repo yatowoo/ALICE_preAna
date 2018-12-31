@@ -33,9 +33,19 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     // TASK - PID response
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse();
+    // TASK - Jpsi Filter for Nano AOD Tree
+    gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
+    AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp(AliVEvent::kEMCEGA, kTRUE, kFALSE);
+    if(taskJPSIfilter){
+        cout << "[-] INFO - Create J/psi filter task, output file: AliAOD.Dielectron.root" << endl;
+        mgr->RegisterExtraFile("AliAOD.Dielectron.root");
+    }else{
+        cout << "[X] ERROR - Fail to create J/psi filter task." << endl;
+        exit(1);
+    }
     // TASK - MB from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    AddTask_cjahnke_JPsi("16l", 100, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
+    AddTask_cjahnke_JPsi("16l", 0, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
     // TASK - EG1 from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
     AddTask_cjahnke_JPsi("16l", 3, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
@@ -61,7 +71,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         // also specify the include (header) paths on grid
         alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
         // make sure your source files get copied to grid
-        alienHandler->SetAdditionalLibs("AddTask_cjahnke_JPsi.C ConfigJpsi_cj_pp.C");
+        alienHandler->SetAdditionalLibs("AddTaskJPSIFilter_pp.C AddTask_cjahnke_JPsi.C ConfigJpsi_cj_pp.C");
         // select the aliphysics version. all other packages
         // are LOADED AUTOMATICALLY!
         // RECOMMENDATION - Keep it the same with local version
