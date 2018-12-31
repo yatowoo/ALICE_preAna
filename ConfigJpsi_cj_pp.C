@@ -20,11 +20,6 @@ enum CutType
 TObjArray *arrNamesDieleData = namesDieleData.Tokenize(";");
 const Int_t nDie = arrNamesDieleData->GetEntries();
 
-//
-// DEBUG - Flag for different task
-//
-Bool_t isFilter = kFALSE;
-
 AliDielectron *ConfigJpsi_cj_pp(Int_t cutDefinition, Bool_t isAOD = kFALSE, Int_t trigger_index = 0, Bool_t isMC)
 {
 	//

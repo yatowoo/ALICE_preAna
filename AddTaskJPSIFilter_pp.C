@@ -1,8 +1,7 @@
-AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
-				      ULong64_t triggers=AliVEvent::kINT7,
-				      TString period="LHC16l",
+AliAnalysisTask *AddTaskJPSIFilter_pp(
+				      ULong64_t triggers=AliVEvent::kEMCEGA,
 				      Bool_t storeLS = kTRUE,
-				      Bool_t hasMC_aod = kFALSE){
+				      Bool_t isMC = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -17,19 +16,19 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
   }
 
   //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0)||hasMC_aod;
+  Bool_t hasMC= isMC && (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   
   //Do we run on AOD?
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
   //Allow merging of the filtered aods on grid trains
   if(mgr->GetGridHandler()) {
-    printf(" SET MERGE FILTERED AODs \n");
-    //mgr->GetGridHandler()->SetMergeAOD(kTRUE);
+    printf("[-] INFO - SET MERGE FILTERED AODs \n");
+    mgr->GetGridHandler()->SetMergeAOD(kTRUE);
   }
   
   //Create task and add it to the analysis manager
-  AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
+  AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi2ee_EMCalFilter");
   task->SetTriggerMask(triggers);
   if (!hasMC) task->UsePhysicsSelection();
 
@@ -41,34 +40,37 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
 	eventCuts->SetMinVtxContributors(1);
 	eventCuts->SetVertexZ(-10., 10.);
 	task->SetEventFilter(eventCuts);
+  task->SetRejectPileup();
+  task->UsePhysicsSelection();
 
   // Add dielectron analysis
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi_nano_PbPb")){
-		gROOT->LoadMacro(cfg.Data());
-    isFilter = kTRUE;
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigJpsi_cj_pp")){
+		gROOT->LoadMacro("ConfigJpsi_cj_pp.C");
 	}
   // From trigger to trigger_index - adapt to CJ's configuration
   Int_t trigger_index = 0;
   switch (triggers)
   {
     case AliVEvent::kINT7:
-      trigger_index = 100;
+      trigger_index = 0;
+      break;
+    case AliEvent::kEMC7:
+      trigger_index = 1;
       break;
     case AliVEvent::kEMCEGA:
-      trigger_index = 4; // for EG2, also cover all EG1?
+      trigger_index = 2; // EMCal L1 trigger
     default:
       trigger_index = 0;
       break;
   }
-  Int_t cutDefinition = 1; // Default EMCal from CJ's LEGO train
-  AliDielectron *jpsi=ConfigJpsi_cj_pp(cutDefinition, kTRUE, trigger_index, hasMC, 0);
+  Int_t cutDefinition = 1; // kEMCal_loose
+  AliDielectron *jpsi=ConfigJpsi_cj_pp(cutDefinition, kTRUE, trigger_index, hasMC);
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event
     AliAODHandler *aodHandler = (AliAODHandler*)mgr->GetOutputEventHandler();
     aodHandler->SetCreateNonStandardAOD();
     aodHandler->SetNeedsHeaderReplication();
-    if(!period.Contains("LHC10h"))
-      aodHandler->SetNeedsTOFHeaderReplication();
+    aodHandler->SetNeedsTOFHeaderReplication();
     aodHandler->SetNeedsVZEROReplication();
     if(hasMC)
       aodHandler->SetNeedsMCParticlesBranchReplication();
@@ -87,7 +89,7 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(TString cfg="ConfigJpsi_nano_pp.C",
   
   
   TString containerName = mgr->GetCommonFileName();
-  containerName += ":PWGDQ_dielectronFilter";
+  containerName += ":PWGDQ_dielectron_Filter";
  
   //create output container
   
