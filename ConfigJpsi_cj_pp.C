@@ -377,7 +377,7 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	*/
 	histos->UserHistogram("Pair", "InvMass", "Inv.Mass;Inv. Mass (GeV/c^{2});#pairs/(40 MeV/c^{2})",
 												100, 1.0, 5.0, AliDielectronVarManager::kM);
-	histos->UserHistogram("Pair", "Pt", "Pt;Pt (GeV/c);#pairs",
+	histos->UserHistogram("Pair", "pT", "Pt;Pt (GeV/c);#pairs",
 												100, 1.0, 5.0, AliDielectronVarManager::kM);
 	histos->UserHistogram("Pair", "Phi", "Phi;#phi;#pairs",
 												200, 0., TMath::TwoPi(), AliDielectronVarManager::kM);

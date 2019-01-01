@@ -40,7 +40,6 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(
 	eventCuts->SetMinVtxContributors(1);
 	eventCuts->SetVertexZ(-10., 10.);
 	task->SetEventFilter(eventCuts);
-  task->SetRejectPileup();
   task->UsePhysicsSelection();
 
   // Add dielectron analysis
@@ -54,7 +53,7 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(
     case AliVEvent::kINT7:
       trigger_index = 0;
       break;
-    case AliEvent::kEMC7:
+    case AliVEvent::kEMC7:
       trigger_index = 1;
       break;
     case AliVEvent::kEMCEGA:

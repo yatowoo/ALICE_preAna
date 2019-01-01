@@ -43,15 +43,18 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         cout << "[X] ERROR - Fail to create J/psi filter task." << endl;
         exit(1);
     }
-    // TASK - MB from C. Jahnke
+		// TASK - Multi-dielectron from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    AddTask_cjahnke_JPsi("16l", 0, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
-    // TASK - EG1 from C. Jahnke
-    gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    AddTask_cjahnke_JPsi("16l", 3, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
-    // TASK - EG2 from C. Jahnke
-    gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    AddTask_cjahnke_JPsi("16l", 4, kFALSE, "ConfigJpsi_cj_pp", kFALSE, kTRUE, 0);
+    // Trigger - MB/kINT7
+    AddTask_cjahnke_JPsi(0, kFALSE);
+    // Trigger - EMC7
+    AddTask_cjahnke_JPsi(1, kFALSE);
+    // Trigger - EMCEGA
+    AddTask_cjahnke_JPsi(2, kFALSE);
+    // Trigger - EMCEGA EG1
+    AddTask_cjahnke_JPsi(3, kFALSE);
+    // Trigger - EMCEGA EG2
+    AddTask_cjahnke_JPsi(4, kFALSE);
 
     if(!mgr->InitAnalysis()) return;
     mgr->SetDebugLevel(2);
