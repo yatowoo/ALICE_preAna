@@ -8,7 +8,6 @@ OUTPUT_DIR=output/$2/
 
 mkdir -p $OUTPUT_DIR
 mv $1* $OUTPUT_DIR/
-mv *xml $OUTPUT_DIR/
-mv AliAOD.root AnalysisResults.root PIDqa.root event_stat.root EventStat_temp.root $OUTPUT_DIR/
+mv *.xml *.root $OUTPUT_DIR/
 mv outputs_valid $OUTPUT_DIR
-cp runAnalysis.C $OUTPUT_DIR
+cp *.C $OUTPUT_DIR

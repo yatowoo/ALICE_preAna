@@ -38,19 +38,22 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp(AliVEvent::kEMCEGA, kTRUE, kFALSE);
     if(taskJPSIfilter){
         cout << "[-] INFO - Create J/psi filter task, output file: AliAOD.Dielectron.root" << endl;
+        AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+        TString aodFiles = aodH->GetOutputFileName();
+        TString extraAOD = "AliAOD.Dielectron.root";
+        if(!aodFiles.IsNull()) aodFiles +=",";
+        aodFiles += extraAOD;
+        if(mode == "final")
+          aodH->SetOutputFileName(extraAOD.Data());
+        else
+          aodH->SetOutputFileName(aodFiles.Data());
         mgr->RegisterExtraFile("AliAOD.Dielectron.root");
     }else{
         cout << "[X] ERROR - Fail to create J/psi filter task." << endl;
         exit(1);
     }
-		// TASK - Multi-dielectron from C. Jahnke
+    // TASK - Multi-dielectron from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    // Trigger - MB/kINT7
-    AddTask_cjahnke_JPsi(0, kFALSE);
-    // Trigger - EMC7
-    AddTask_cjahnke_JPsi(1, kFALSE);
-    // Trigger - EMCEGA
-    AddTask_cjahnke_JPsi(2, kFALSE);
     // Trigger - EMCEGA EG1
     AddTask_cjahnke_JPsi(3, kFALSE);
     // Trigger - EMCEGA EG2
@@ -108,6 +111,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         // after re-running the jobs in SetRunMode("terminate") 
         // (see below) mode, set SetMergeViaJDL(kFALSE) 
         // to collect final results
+        alienHandler->SetMergeAOD(kTRUE);
         alienHandler->SetMaxMergeStages(1);
         if(mode == "final")
             alienHandler->SetMergeViaJDL(kFALSE);
