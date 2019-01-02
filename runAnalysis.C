@@ -43,13 +43,16 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         TString extraAOD = "AliAOD.Dielectron.root";
         if(!aodFiles.IsNull()) aodFiles +=",";
         aodFiles += extraAOD;
-        aodH->SetOutputFileName(aodFiles.Data());
+        if(mode == "final")
+          aodH->SetOutputFileName(extraAOD.Data());
+        else
+          aodH->SetOutputFileName(aodFiles.Data());
         mgr->RegisterExtraFile("AliAOD.Dielectron.root");
     }else{
         cout << "[X] ERROR - Fail to create J/psi filter task." << endl;
         exit(1);
     }
-		// TASK - Multi-dielectron from C. Jahnke
+    // TASK - Multi-dielectron from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
     // Trigger - EMCEGA EG1
     AddTask_cjahnke_JPsi(3, kFALSE);
