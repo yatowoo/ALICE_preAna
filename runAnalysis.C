@@ -41,15 +41,6 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp(AliVEvent::kEMCEGA, kTRUE, kFALSE);
     if(taskJPSIfilter){
         cout << "[-] INFO - Create J/psi filter task, output file: AliAOD.Dielectron.root" << endl;
-        AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-        TString aodFiles = aodH->GetOutputFileName();
-        TString extraAOD = "AliAOD.Dielectron.root";
-        if(!aodFiles.IsNull()) aodFiles +=",";
-        aodFiles += extraAOD;
-        if(mode == "final")
-          aodH->SetOutputFileName(extraAOD.Data());
-        else
-          aodH->SetOutputFileName(aodFiles.Data());
         mgr->RegisterExtraFile("AliAOD.Dielectron.root");
     }else{
         cout << "[X] ERROR - Fail to create J/psi filter task." << endl;
