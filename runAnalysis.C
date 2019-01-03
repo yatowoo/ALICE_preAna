@@ -1,5 +1,5 @@
 // Mode : local, test, full, merge, final
-void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2", TString datasets="16l_pass1", TString task_name="jpsiTask")
+void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2", TString datasets="16l_pass1", TString dataDir="2016/LHC16l", TString task_name="jpsiTask")
 {
     gROOT->LoadMacro("DQ_pp_AOD.C");
     DQ_pp_AOD();
@@ -33,6 +33,9 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     // TASK - PID response
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse();
+    // TASK - PID QA
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
+    AddTaskPIDqa("PIDqa.root");
     // TASK - Jpsi Filter for Nano AOD Tree
     gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
     AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp(AliVEvent::kEMCEGA, kTRUE, kFALSE);
@@ -54,6 +57,8 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     }
     // TASK - Multi-dielectron from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
+    // Trigger - MB kINT7 
+    AddTask_cjahnke_JPsi(0, kFALSE);
     // Trigger - EMCEGA EG1
     AddTask_cjahnke_JPsi(3, kFALSE);
     // Trigger - EMCEGA EG2
@@ -85,7 +90,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         // set the Alien API version
         alienHandler->SetAPIVersion("V1.1x");
         // select the input data
-        alienHandler->SetGridDataDir("/alice/data/2016/LHC16l");
+        alienHandler->SetGridDataDir("/alice/data/"+dataDir);
         alienHandler->SetDataPattern("*/pass1/AOD/*AOD.root");
         // MC has no prefix, data has prefix 000
         alienHandler->SetRunPrefix("000");
