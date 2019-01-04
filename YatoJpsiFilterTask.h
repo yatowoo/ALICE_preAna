@@ -14,24 +14,20 @@
 
 #include "AliAODHandler.h"
 #include "AliAODExtension.h"
+#include "AliAnalysisManager.h"
 
 #include "AliAnalysisTaskDielectronFilter.h"
+
+class AliAnalysisManager;
 
 class YatoJpsiFilterTask : public AliAnalysisTaskDielectronFilter {
 
 public:
-  YatoJpsiFilterTask() : AliAnalysisTaskDielectronFilter(), fIsToMerge(kFALSE){}
-  YatoJpsiFilterTask(const char* name) : AliAnalysisTaskDielectronFilter(name), fIsToMerge(kFALSE);
+  YatoJpsiFilterTask();
+  YatoJpsiFilterTask(const char* name);
   virtual ~YatoJpsiFilterTask(){}
 
-  virtual void Init(){
-    // Initialization
-    if (fDebug > 1) AliInfo("Init() \n");
-    // require AOD handler
-    AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
-    if (!aodH) AliFatal("No AOD handler. Halting.");
-    aodH->AddFilteredAOD("AliAOD.Dielectron.root", "DielectronEvents", fIsToMerge);
-  }
+  virtual void Init();
 
   Bool_t IsToMerge() { return fIsToMerge;}
   void SetToMerge(Bool_t isToMerge = kTRUE){ fIsToMerge = isToMerge;}

@@ -12,6 +12,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     // PATH for headers 
     gROOT->ProcessLine(".include $ROOTSYS/include");
     gROOT->ProcessLine(".include $ALICE_ROOT/include");
+    gROOT->ProcessLine(".include $ALICE_PHYSICS/include");
 
     // create the analysis manager
     AliAnalysisManager *mgr = new AliAnalysisManager("PPJpsiAnalysis");
@@ -34,6 +35,8 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse();
     // TASK - Jpsi Filter for Nano AOD Tree
+    gROOT->LoadMacro("YatoJpsiFilterTask.cxx++g");
+    YatoJpsiFilterTask *task=new YatoJpsiFilterTask("jpsi2ee_EMCalFilter");
     gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
     AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp(AliVEvent::kEMCEGA, kTRUE, kFALSE);
     if(taskJPSIfilter){
@@ -41,8 +44,6 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
         TString aodFiles = aodH->GetOutputFileName();
         TString extraAOD = "AliAOD.Dielectron.root";
-        if(!aodFiles.IsNull()) aodFiles +=",";
-        aodFiles += extraAOD;
         if(mode == "final")
           aodH->SetOutputFileName(extraAOD.Data());
         else
