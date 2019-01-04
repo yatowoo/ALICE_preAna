@@ -36,7 +36,6 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AddTaskPIDResponse();
     // TASK - Jpsi Filter for Nano AOD Tree
     gROOT->LoadMacro("YatoJpsiFilterTask.cxx++g");
-    YatoJpsiFilterTask *task=new YatoJpsiFilterTask("jpsi2ee_EMCalFilter");
     gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
     AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp(AliVEvent::kEMCEGA, kTRUE, kFALSE);
     if(taskJPSIfilter){
@@ -78,7 +77,8 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         // also specify the include (header) paths on grid
         alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
         // make sure your source files get copied to grid
-        alienHandler->SetAdditionalLibs("AddTaskJPSIFilter_pp.C AddTask_cjahnke_JPsi.C ConfigJpsi_cj_pp.C");
+        alienHandler->SetAdditionalLibs("AddTaskJPSIFilter_pp.C AddTask_cjahnke_JPsi.C ConfigJpsi_cj_pp.C YatoJpsiFilterTask.h YatoJpsiFilterTask.cxx");
+				alienHandler->SetAnalysisSource("YatoJpsiFilterTask.cxx")
         // select the aliphysics version. all other packages
         // are LOADED AUTOMATICALLY!
         // RECOMMENDATION - Keep it the same with local version

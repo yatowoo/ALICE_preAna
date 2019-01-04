@@ -16,6 +16,9 @@
 #include "AliAODExtension.h"
 #include "AliAnalysisManager.h"
 
+#include "AliDielectronVarManager.h"
+class AliDielectronVarManager;
+
 #include "AliAnalysisTaskDielectronFilter.h"
 
 class AliAnalysisManager;

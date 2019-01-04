@@ -28,8 +28,9 @@ AliAnalysisTask *AddTaskJPSIFilter_pp(
   }
   
   //Create task and add it to the analysis manager
-  AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi2ee_EMCalFilter");
+  YatoJpsiFilterTask *task=new YatoJpsiFilterTask("jpsi2ee_EMCalFilter");
   task->SetTriggerMask(triggers);
+	task->SetToMerge(kTRUE);
   if (!hasMC) task->UsePhysicsSelection();
 
 	//Add event filter
