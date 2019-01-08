@@ -378,15 +378,15 @@ void InitHistogramsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
 	histos->UserHistogram("Pair", "InvMass", "Inv.Mass;Inv. Mass (GeV/c^{2});#pairs/(40 MeV/c^{2})",
 												100, 1.0, 5.0, AliDielectronVarManager::kM);
 	histos->UserHistogram("Pair", "pT", "Pt;Pt (GeV/c);#pairs",
-												100, 1.0, 5.0, AliDielectronVarManager::kM);
+												100, 1.0, 5.0, AliDielectronVarManager::kPt);
 	histos->UserHistogram("Pair", "Phi", "Phi;#phi;#pairs",
-												200, 0., TMath::TwoPi(), AliDielectronVarManager::kM);
+												200, 0., TMath::TwoPi(), AliDielectronVarManager::kPhi);
 	histos->UserHistogram("Pair", "Rapidity", "Rapidity;Rapidity;#pairs",
 												50, -1., 1., AliDielectronVarManager::kY);
-	histos->UserHistogram("Pair", "OpeningAngle", "Opening angle;angle",
+	histos->UserHistogram("Pair", "OpeningAngle", "Opening angle / rad;#pairs",
 												50, 0., 3.15, AliDielectronVarManager::kOpeningAngle);
 
-	histos->UserHistogram("Pair", "PseudoProperTime", "Pseudoproper decay length; pseudoproper-decay-length[cm];Entries/40#mum",
+	histos->UserHistogram("Pair", "PseudoProperTime", "Pseudoproper decay length; pseudoproper-decay-length[cm];#pairs / 40#mum",
 												150, -0.3, 0.3, AliDielectronVarManager::kPseudoProperTime);
 	histos->UserHistogram("Pair", "InvMass_Pt", "Inv. Mass vs Pt;Pt (GeV/c); Inv. Mass (GeV/c^{2})",
 												200, 0., 40., 100, 1.0, 5.0, AliDielectronVarManager::kPt, AliDielectronVarManager::kM);
