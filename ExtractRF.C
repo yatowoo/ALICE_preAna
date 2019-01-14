@@ -20,10 +20,10 @@
 Int_t GetEventNumber(TFile* resultFile, Int_t trigger_index){
   TString rootDir = "PWGDQ_dielectron_EMCal";
   TDirectoryFile* rootDirObj = (TDirectoryFile*)(resultFile->Get(rootDir));
-  TString triggerDir = Form("cjahnke_QA_%d_cent0", trigger_index);
+  TString triggerDir = Form("cjahnke_QA_%d", trigger_index);
   TList* triggerDirObj = (TList*)(rootDirObj->FindKey(triggerDir)->ReadObj());
   TH1* vtxz = (TH1*)(triggerDirObj
-    ->FindObject("RAW")
+    ->FindObject("EMCal")
     ->FindObject("Event")
     ->FindObject("VtxZ"));
   if(!vtxz){
@@ -38,7 +38,7 @@ TH1* GetEMCalE(TFile* resultFile, Int_t trigger_index, TString cutDef){
 
   TString rootDir = "PWGDQ_dielectron_EMCal";
   TDirectoryFile* rootDirObj = (TDirectoryFile*)(resultFile->Get(rootDir));
-  TString triggerDir = Form("cjahnke_QA_%d_cent0", trigger_index);
+  TString triggerDir = Form("cjahnke_QA_%d", trigger_index);
   TList* triggerDirObj = (TList*)(rootDirObj->FindKey(triggerDir)->ReadObj());
 
   TH1* hEMCalE = (TH1*)(triggerDirObj
@@ -49,7 +49,7 @@ TH1* GetEMCalE(TFile* resultFile, Int_t trigger_index, TString cutDef){
     ->FindObject(cutDef)
     ->FindObject("Track_ev1-")->FindObject("EMCal_E"));
   
-	if(!hEMCalE && !hEMCalE_minus){
+	if(!hEMCalE || !hEMCalE_minus){
     cout << "[X] ERROR - Object not found : " << rootDir << "/" << triggerDir << "/" + cutDef << "/Track_ev1+/EMCal_E" << endl;
     return NULL;
   }
@@ -60,7 +60,7 @@ TH1* GetEMCalE(TFile* resultFile, Int_t trigger_index, TString cutDef){
 
   return NULL;
 }
-int ExtractRF(TFile* resultFile, TString cutDef = "RAW"){
+int ExtractRF(TFile* resultFile, TString cutDef = "EMCal"){
   
   if(!resultFile){
     cout << "[X] ERROR - Result file is NULL" << endl;
@@ -68,12 +68,12 @@ int ExtractRF(TFile* resultFile, TString cutDef = "RAW"){
   }
  
   // N_event for normalization
-  Int_t nMB = GetEventNumber(resultFile, 100);
+  Int_t nMB = GetEventNumber(resultFile, 0);
   Int_t nEG1 = GetEventNumber(resultFile, 3);
   Int_t nEG2 = GetEventNumber(resultFile, 4);
 
   // EMCal_E histogram
-  TH1* hMB = GetEMCalE(resultFile, 100, cutDef);
+  TH1* hMB = GetEMCalE(resultFile, 0, cutDef);
   TH1* hEG1 = GetEMCalE(resultFile, 3, cutDef);
   TH1* hEG2 = GetEMCalE(resultFile, 4, cutDef);
 
