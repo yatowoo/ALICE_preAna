@@ -2,7 +2,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const char *nTracks                        = "usedefault",
   const char *nClusters                      = "usedefault",
   const AliJetContainer::EJetAlgo_t jetAlgo  = AliJetContainer::antikt_algorithm,
-  const Double_t radius                      = 0.4,
+  const Double_t radius                      = 0.2,
   const AliJetContainer::EJetType_t jetType  = AliJetContainer::kFullJet,
   const Double_t minTrPt                     = 0.15,
   const Double_t minClPt                     = 0.30,
@@ -96,6 +96,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
   }
   if (partCont) partCont->SetParticlePtCut(minTrPt);
 
+  cout << "[+] DEBUG - Create particle/track container : " << trackName << endl;
+
   AliClusterContainer* clusCont = 0;
   if (!clusName.IsNull()) {
     clusCont = new AliClusterContainer(clusName);
@@ -104,6 +106,8 @@ AliEmcalJetTask* AddTaskEmcalJet(
     clusCont->SetClusHadCorrEnergyCut(minClPt);
     clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
+
+  cout << "[+] DEBUG - Create cluster container : " << clusName << endl;
 
   switch (jetType) {
   case AliJetContainer::kChargedJet:

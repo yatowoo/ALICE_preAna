@@ -23,34 +23,17 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
 
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODOutputHandler.C");
     AliVEventHandler *handler = AddAODOutputHandler();
-    AliAnalysisManager::SetGlobalStr("kJetDeltaAODName", "");
-    AliAnalysisManager::SetGlobalInt("kFillAODForRun", 0);
-    AliAnalysisManager::SetGlobalInt("kFilterAOD", 0);
-    ((AliAODHandler *)handler)->SetFillAODforRun(kFALSE);
-    ((AliAODHandler *)handler)->SetNeedsHeaderReplication();
-    // TASK -Physics selectrion
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    AddTaskPhysicsSelection(kFALSE, kTRUE);
-    // TASK - PID response
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse();
+    ((AliAODHandler*)handler)->SetFillAOD(kTRUE);
+
     // TASK - Basic Jet Finder task
-    gROOT->LoadMacro("AddTaskEmcalJetTriggerQA.C");
-    AliAnalysisTaskSE *taskJet = AddTaskEmcalJetTriggerQA("tracks", "caloClusters", 0.4, 0.15, 0.3, 0, "", "", "V0A", AliVEvent::kINT7, 10., "", "LHC16l", "pp");
+    gROOT->LoadMacro("AddTaskEmcalJet.C");
+    AliAnalysisTaskSE *taskJet = AddTaskEmcalJet();
     if(taskJet){
         cout << "[-] INFO - Create jet finder task" << endl;
     }else{
         cout << "[X] ERROR - Fail to create jet finder task." << endl;
         exit(1);
     }
-    // TASK - Multi-dielectron from C. Jahnke
-    gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    // Trigger - MB kINT7 
-    AddTask_cjahnke_JPsi(0, kFALSE);
-    // Trigger - EMCEGA EG1
-    AddTask_cjahnke_JPsi(3, kFALSE);
-    // Trigger - EMCEGA EG2
-    AddTask_cjahnke_JPsi(4, kFALSE);
 
     if(!mgr->InitAnalysis()) return;
     mgr->SetDebugLevel(2);
