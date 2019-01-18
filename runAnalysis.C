@@ -28,27 +28,9 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AliAnalysisManager::SetGlobalInt("kFilterAOD", 0);
     ((AliAODHandler *)handler)->SetFillAODforRun(kFALSE);
     ((AliAODHandler *)handler)->SetNeedsHeaderReplication();
-    // TASK -Physics selectrion
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    AddTaskPhysicsSelection(kFALSE, kTRUE);
     // TASK - PID response
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse();
-    // TASK - PID QA
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
-    AddTaskPIDqa("PIDqa.root");
-    // TASK - Jpsi Filter for Nano AOD Tree
-    gROOT->LoadMacro("YatoJpsiFilterTask.cxx++g");
-    gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
-    AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp(AliVEvent::kEMCEGA, kTRUE, kFALSE);
-    if(taskJPSIfilter){
-        cout << "[-] INFO - Create J/psi filter task, output file: AliAOD.Dielectron.root" << endl;
-        TString extraAOD = "AliAOD.Dielectron.root";
-        mgr->RegisterExtraFile(extraAOD.Data());
-    }else{
-        cout << "[X] ERROR - Fail to create J/psi filter task." << endl;
-        exit(1);
-    }
     // TASK - Multi-dielectron from C. Jahnke
     gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
     // Trigger - MB kINT7 
@@ -57,6 +39,10 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AddTask_cjahnke_JPsi(3, kFALSE);
     // Trigger - EMCEGA EG2
     AddTask_cjahnke_JPsi(4, kFALSE);
+    // Trigger - EMCEGA DG1
+    AddTask_cjahnke_JPsi(5, kFALSE);
+    // Trigger - EMCEGA DG2
+    AddTask_cjahnke_JPsi(6, kFALSE);
 
     if(!mgr->InitAnalysis()) return;
     mgr->SetDebugLevel(2);
