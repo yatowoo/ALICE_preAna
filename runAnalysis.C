@@ -27,11 +27,20 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
 
     // TASK - Basic Jet Finder task
     gROOT->LoadMacro("AddTaskEmcalJet.C");
-    AliAnalysisTaskSE *taskJet = AddTaskEmcalJet();
+    AliAnalysisTaskSE *taskJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, 0.2, AliJetContainer::kFullJet, 0.15, 0.30, 0.01, AliJetContainer::E_scheme, "Jet", 1, kFALSE, kFALSE);
     if(taskJet){
         cout << "[-] INFO - Create jet finder task" << endl;
     }else{
         cout << "[X] ERROR - Fail to create jet finder task." << endl;
+        exit(1);
+    }
+    // TASK - Jet spectrum
+    gROOT->LoadMacro("AddTaskEmcalJetEnergySpectrum.C");
+    AliAnalysisTaskSE *taskJetSpectrum = AddTaskEmcalJetEnergySpectrum(kFALSE, AliJetContainer::kFullJet, 0.2, "INT7");
+    if(taskJetSpectrum){
+        cout << "[-] INFO - Create jet spectrum task" << endl;
+    }else{
+        cout << "[X] ERROR - Fail to create jet spectrum task." << endl;
         exit(1);
     }
 
