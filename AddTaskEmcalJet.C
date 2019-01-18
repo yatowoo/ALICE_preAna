@@ -96,8 +96,6 @@ AliEmcalJetTask* AddTaskEmcalJet(
   }
   if (partCont) partCont->SetParticlePtCut(minTrPt);
 
-  cout << "[+] DEBUG - Create particle/track container : " << trackName << endl;
-
   AliClusterContainer* clusCont = 0;
   if (!clusName.IsNull()) {
     clusCont = new AliClusterContainer(clusName);
@@ -106,8 +104,6 @@ AliEmcalJetTask* AddTaskEmcalJet(
     clusCont->SetClusHadCorrEnergyCut(minClPt);
     clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   }
-
-  cout << "[+] DEBUG - Create cluster container : " << clusName << endl;
 
   switch (jetType) {
   case AliJetContainer::kChargedJet:
