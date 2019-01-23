@@ -27,16 +27,42 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
 
     // TASK - Basic Jet Finder task
     gROOT->LoadMacro("AddTaskEmcalJet.C");
-    AliAnalysisTaskSE *taskJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, 0.2, AliJetContainer::kFullJet, 0.15, 0.30, 0.01, AliJetContainer::E_scheme, "Jet", 1, kFALSE, kFALSE);
+    AliEmcalJetTask *taskJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, 0.2, AliJetContainer::kChargedJet, 0.15, 0.3, 0.005, AliJetContainer::pt_scheme, "Jet", 1., kFALSE, kFALSE);
     if(taskJet){
+        taskJet->SetForceBeamType(AliAnalysisTaskEmcal::kpp);
+        taskJet->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+        taskJet->SetUseAliAnaUtils(kTRUE);
+        taskJet->SetZvertexDiffValue(0.5);
+        taskJet->SetNeedEmcalGeom(kFALSE);
         cout << "[-] INFO - Create jet finder task" << endl;
     }else{
         cout << "[X] ERROR - Fail to create jet finder task." << endl;
         exit(1);
     }
+ /*   
+    // TASK - Jet rho
+    gROOT->LoadMacro("AddTaskRhoSparse.C");
+    AliAnalysisTaskRhoSparse *taskJetRho = AddTaskRhoSparse("usedefault","usedefault", "Rho02",0.2, AliEmcalJet::kTPCfid, AliJetContainer::kChargedJet, AliJetContainer::pt_scheme, kTRUE, "","TPC", 0.0, 0.01, 0, "");
+    if(taskJetRho){
+        cout << "[-] INFO - Create jet spectrum task" << endl;
+        taskJetRho->SetExcludeLeadJets(2);
+        taskJetRho->SetOutRhoName("Rho02");
+        taskJetRho->SelectCollisionCandidates(AliVEvent::kAny);
+        taskJetRho->SetForceBeamType(AliAnalysisTaskEmcal::kpp);
+        taskJetRho->SetUseNewCentralityEstimation(kTRUE);
+
+        taskJetRho->SetUseAliAnaUtils(kTRUE);
+        taskJetRho->SetUseSPDTrackletVsClusterBG(kTRUE);
+        taskJetRho->SetZvertexDiffValue(0.5);
+        taskJetRho->SetNeedEmcalGeom(kFALSE);
+    }else{
+        cout << "[X] ERROR - Fail to create jet rho task." << endl;
+        exit(1);
+    }
+*/
     // TASK - Jet spectrum
-    gROOT->LoadMacro("AddTaskEmcalJetEnergySpectrum.C");
-    AliAnalysisTaskSE *taskJetSpectrum = AddTaskEmcalJetEnergySpectrum(kFALSE, AliJetContainer::kFullJet, 0.2, "INT7");
+    gROOT->LoadMacro("AddTaskEmcalJetSpectraQA.C");
+    AliAnalysisTaskSE *taskJetSpectrum = AddTaskEmcalJetSpectraQA("usedefault", "usedefault", 0.15, 0.30, "");
     if(taskJetSpectrum){
         cout << "[-] INFO - Create jet spectrum task" << endl;
     }else{
@@ -45,7 +71,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     }
 
     if(!mgr->InitAnalysis()) return;
-    mgr->SetDebugLevel(2);
+    mgr->SetDebugLevel(3);
     mgr->PrintStatus();
     mgr->SetUseProgressBar(1, 25);
 
