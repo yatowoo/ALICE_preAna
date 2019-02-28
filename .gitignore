@@ -5,6 +5,7 @@
 *.root
 *.xml
 *.pcm
+*.log
 .vscode/
 run.log
 myTask*

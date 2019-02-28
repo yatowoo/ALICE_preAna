@@ -1,13 +1,6 @@
 // Mode : local, test, full, merge, final
 void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2", TString datasets="16l_pass1", TString dataDir="2016/LHC16l", TString task_name="jpsiTask")
 {
-    gROOT->LoadMacro("DQ_pp_AOD.C");
-    DQ_pp_AOD();
-    TString runlist = DATASETS[datasets];
-    if(!runlist.Length()){
-        cout << "[X] ERROR - Wrong datasets : " << datasets << endl;
-        exit(1);
-    }
 
     // PATH for headers 
     gROOT->ProcessLine(".include $ROOTSYS/include");
@@ -79,10 +72,22 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         // Define data input for local analysis
         TChain* chain = new TChain("aodTree");
         // add a few files to the chain (change this so that your local files are added)
-        chain->Add("AliAOD_input.root");
+        if(datasets == "16l_pass1")
+            chain->Add("AliAOD_input.root");
+        else
+            chain->Add(datasets.Data());
         // start the analysis locally, reading the events from the tchain
         mgr->StartAnalysis("local", chain);
     } else {
+
+        gROOT->LoadMacro("DQ_pp_AOD.C");
+        DQ_pp_AOD();
+        TString runlist = DATASETS[datasets];
+        if(!runlist.Length()){
+            cout << "[X] ERROR - Wrong datasets : " << datasets << endl;
+            exit(1);
+        }
+
         // if we want to run on grid, we create and configure the plugin
         AliAnalysisAlien *alienHandler = new AliAnalysisAlien();
         // also specify the include (header) paths on grid
