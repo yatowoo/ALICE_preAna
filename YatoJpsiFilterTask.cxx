@@ -221,6 +221,7 @@ void YatoJpsiFilterTask::UserExec(Option_t*){
 			nanoEv->GetCaloClusters()->Clear();
 
 			AliAODVertex *tmp = ((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex())->CloneWithoutRefs();
+			tmp->SetTitle(((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex())->GetTitle());
 			nanoEv->AddVertex(tmp);
 			AliAODVertex *tmpSpd = ((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD())->CloneWithoutRefs();
 			nanoEv->AddVertex(tmpSpd);
