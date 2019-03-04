@@ -14,14 +14,22 @@
 
 #include "AliAODHandler.h"
 #include "AliAODExtension.h"
+#include "AliESDInputHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
+#include "AliTriggerAnalysis.h"
 
+#include "AliDielectron.h"
+class AliDielectron;
 #include "AliDielectronVarManager.h"
 class AliDielectronVarManager;
 
 #include "AliAnalysisTaskDielectronFilter.h"
 
+class AliESDInputHandler;
+class AliAODInputHandler;
 class AliAnalysisManager;
+class AliTriggerAnalysis;
 
 class YatoJpsiFilterTask : public AliAnalysisTaskDielectronFilter {
 
@@ -31,6 +39,7 @@ public:
   virtual ~YatoJpsiFilterTask(){}
 
   virtual void Init();
+  virtual void UserExec(Option_t* option);
 
   Bool_t IsToMerge() { return fIsToMerge;}
   void SetToMerge(Bool_t isToMerge = kTRUE){ fIsToMerge = isToMerge;}
