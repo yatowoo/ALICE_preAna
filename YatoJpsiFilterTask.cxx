@@ -221,12 +221,13 @@ void YatoJpsiFilterTask::UserExec(Option_t*){
 			nanoEv->GetCaloClusters()->Clear();
 
 			AliAODVertex *tmp = ((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex())->CloneWithoutRefs();
-			tmp->SetTitle(((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex())->GetTitle());
 			nanoEv->AddVertex(tmp);
 			AliAODVertex *tmpSpd = ((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD())->CloneWithoutRefs();
 			nanoEv->AddVertex(tmpSpd);
 			nanoEv->GetVertex(0)->SetNContributors((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex()->GetNContributors());
+			nanoEv->GetVertex(0)->SetTitle(((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex())->GetTitle());
 			nanoEv->GetVertex(1)->SetNContributors((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD()->GetNContributors());
+			nanoEv->GetVertex(1)->SetTitle(((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD())->GetTitle());
 
 			AliAODHeader *header = dynamic_cast<AliAODHeader *>(nanoEv->GetHeader());
 			AliAODHeader *inputHeader = dynamic_cast<AliAODHeader *>(InputEvent()->GetHeader());
