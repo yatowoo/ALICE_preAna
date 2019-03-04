@@ -11,7 +11,7 @@ ALICE_OUTPUT_DIR=$1/$ALICE_DATA_NO
 
 set -v
 mkdir -p $ALICE_OUTPUT_DIR
-cp *.C $ALICE_OUTPUT_DIR/
+cp *.C *.h *.cxx $ALICE_OUTPUT_DIR/
 cd $ALICE_OUTPUT_DIR/
 ln -s -f $ALICE_DATA_FILE AliAOD_input.root
 export PATH=/data2/ytwu/Software/bin:$PATH
