@@ -24,7 +24,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     if(taskJet){
         taskJet->SetForceBeamType(AliAnalysisTaskEmcal::kpp);
         taskJet->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-        taskJet->SetUseAliAnaUtils(kTRUE);
+        taskJet->SetUseAliAnaUtils(kFALSE, kFALSE);
         taskJet->SetZvertexDiffValue(0.5);
         taskJet->SetNeedEmcalGeom(kFALSE);
         cout << "[-] INFO - Create jet finder task" << endl;
