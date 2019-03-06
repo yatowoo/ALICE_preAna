@@ -220,14 +220,17 @@ void YatoJpsiFilterTask::UserExec(Option_t*){
 			nanoEv->GetVertices()->Clear();
 			nanoEv->GetCaloClusters()->Clear();
 
-			AliAODVertex *tmp = ((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex())->CloneWithoutRefs();
+			AliAODVertex *vtx = (static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex();
+			AliAODVertex *vtxSpd = (static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD();
+			AliAODVertex *tmp = vtx->CloneWithoutRefs();
+			tmp->SetTitle(vtx->GetTitle());
+			tmp->SetNContributors(vtx->GetNContributors());
+			tmp->SetUseCountVtxTrackContributors(kFALSE);
 			nanoEv->AddVertex(tmp);
-			AliAODVertex *tmpSpd = ((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD())->CloneWithoutRefs();
+			AliAODVertex *tmpSpd = vtxSpd->CloneWithoutRefs(); 
+		  tmpSpd->SetTitle(vtxSpd->GetTitle());
+			tmpSpd->SetNContributors(vtxSpd->GetNContributors());
 			nanoEv->AddVertex(tmpSpd);
-			nanoEv->GetVertex(0)->SetNContributors((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex()->GetNContributors());
-			nanoEv->GetVertex(0)->SetTitle(((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex())->GetTitle());
-			nanoEv->GetVertex(1)->SetNContributors((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD()->GetNContributors());
-			nanoEv->GetVertex(1)->SetTitle(((static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD())->GetTitle());
 
 			AliAODHeader *header = dynamic_cast<AliAODHeader *>(nanoEv->GetHeader());
 			AliAODHeader *inputHeader = dynamic_cast<AliAODHeader *>(InputEvent()->GetHeader());
