@@ -4,6 +4,9 @@
  * Impelement <merge> interface for AliAODExtension 
  * Based on AliAnalysisTaskDielectronFilter
  * 
+ * NOTICE: Test OK AliPhysics::vAN-20180414
+ * 	FAILED on vAN-20181208 because of the private variables.
+ *
  * By: Yìtāo WÚ <yitao@cern.ch>
 */
 

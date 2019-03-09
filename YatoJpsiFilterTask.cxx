@@ -224,12 +224,9 @@ void YatoJpsiFilterTask::UserExec(Option_t*){
 			AliAODVertex *vtxSpd = (static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD();
 			AliAODVertex *tmp = vtx->CloneWithoutRefs();
 			tmp->SetTitle(vtx->GetTitle());
-			tmp->SetNContributors(vtx->GetNContributors());
-			tmp->SetUseCountVtxTrackContributors(kFALSE);
 			nanoEv->AddVertex(tmp);
 			AliAODVertex *tmpSpd = vtxSpd->CloneWithoutRefs(); 
 		  tmpSpd->SetTitle(vtxSpd->GetTitle());
-			tmpSpd->SetNContributors(vtxSpd->GetNContributors());
 			nanoEv->AddVertex(tmpSpd);
 
 			AliAODHeader *header = dynamic_cast<AliAODHeader *>(nanoEv->GetHeader());
