@@ -3,13 +3,13 @@
 # Script for running ALICE jobs in local datasets
 
 ALICE_OUTPUT_DIR=$1
-ALICE_DATA_DIR=$2
-let "no=$3+1"
-ALICE_DATA_NO=$(printf "%03d" $no)
-ALICE_DATA_FILE=$2/AOD_$ALICE_DATA_NO.root
-ALICE_OUTPUT_DIR=$1/$ALICE_DATA_NO
+ALICE_DATA_PATTERN=$2
+filelist=($(ls $ALICE_DATA_PATTERN))
+ALICE_DATA_FILE=${filelist[$3]}
+data_dir=$(basename $(dirname $ALICE_DATA_FILE))
+ALICE_OUTPUT_DIR=$1/$data_dir
 
-set -v
+set -x
 mkdir -p $ALICE_OUTPUT_DIR
 cp *.C *.h *.cxx $ALICE_OUTPUT_DIR/
 cd $ALICE_OUTPUT_DIR/
@@ -23,4 +23,4 @@ alienv list --no-refresh
 aliroot -l -b -x -q runAnalysis.C 1>run.out 2>run.err
 alienv unload AliPhysics/0-1 --no-refresh
 alienv list --no-refresh
-set +v
+set +x
