@@ -15,12 +15,12 @@ cp *.C *.h *.cxx $ALICE_OUTPUT_DIR/
 cd $ALICE_OUTPUT_DIR/
 ln -s -f $ALICE_DATA_FILE AliAOD_input.root
 export PATH=/data2/ytwu/Software/bin:$PATH
-export ALIBUILD_WORK_DIR=/data2/ytwu/Software/ALICE/sw
+export ALIBUILD_WORK_DIR=/data2/ytwu/Software/ALICE/opt
 eval "`alienv shell-helper`"
 alienv q --no-refresh | grep -v "latest"
-alienv load AliPhysics/0-1 --no-refresh
+alienv load AliPhysics::vAN-20181208 --no-refresh
 alienv list --no-refresh
 aliroot -l -b -x -q runAnalysis.C 1>run.out 2>run.err
-alienv unload AliPhysics/0-1 --no-refresh
+alienv unload AliPhysics::vAN-20181208 --no-refresh
 alienv list --no-refresh
 set +x
