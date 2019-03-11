@@ -223,7 +223,7 @@ void YatoJpsiFilterTask::UserExec(Option_t*){
 			AliAODVertex *vtx = (static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertex();
 			AliAODVertex *vtxSpd = (static_cast<AliAODEvent *>(InputEvent()))->GetPrimaryVertexSPD();
 			AliAODVertex *tmp = vtx->CloneWithoutRefs();
-			tmp->SetTitle(vtx->GetTitle());
+			tmp->SetTitle("VertexerTracksMVWithConstraint");
 			nanoEv->AddVertex(tmp);
 			AliAODVertex *tmpSpd = vtxSpd->CloneWithoutRefs(); 
 		  tmpSpd->SetTitle(vtxSpd->GetTitle());

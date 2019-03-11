@@ -28,15 +28,9 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     AliAnalysisManager::SetGlobalInt("kFilterAOD", 0);
     ((AliAODHandler *)handler)->SetFillAODforRun(kFALSE);
     ((AliAODHandler *)handler)->SetNeedsHeaderReplication();
-    // TASK -Physics selectrion
-    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    AddTaskPhysicsSelection(kFALSE, kTRUE);
     // TASK - PID response
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse();
-    // TASK - PID QA
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
-    AddTaskPIDqa("PIDqa.root");
     // TASK - Jpsi Filter for Nano AOD Tree
     gROOT->LoadMacro("YatoJpsiFilterTask.cxx++g");
     gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
