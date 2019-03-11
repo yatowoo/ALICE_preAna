@@ -1,13 +1,6 @@
 // Mode : local, test, full, merge, final
 void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2", TString datasets="16l_pass1", TString dataDir="2016/LHC16l", TString task_name="jpsiTask")
 {
-    gROOT->LoadMacro("DQ_pp_AOD.C");
-    DQ_pp_AOD();
-    TString runlist = DATASETS[datasets];
-    if(!runlist.Length()){
-        cout << "[X] ERROR - Wrong datasets : " << datasets << endl;
-        exit(1);
-    }
 
     // PATH for headers 
     gROOT->ProcessLine(".include $ROOTSYS/include");
@@ -23,37 +16,56 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
 
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/train/AddAODOutputHandler.C");
     AliVEventHandler *handler = AddAODOutputHandler();
-    AliAnalysisManager::SetGlobalStr("kJetDeltaAODName", "");
-    AliAnalysisManager::SetGlobalInt("kFillAODForRun", 0);
-    AliAnalysisManager::SetGlobalInt("kFilterAOD", 0);
-    ((AliAODHandler *)handler)->SetFillAODforRun(kFALSE);
-    ((AliAODHandler *)handler)->SetNeedsHeaderReplication();
-    // TASK - PID response
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
-    AddTaskPIDResponse();
-    // TASK - Jpsi Filter for Nano AOD Tree
-    gROOT->LoadMacro("YatoJpsiFilterTask.cxx++g");
-    gROOT->LoadMacro("AddTaskJPSIFilter_pp.C");
-    AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter_pp(AliVEvent::kEMCEGA, kTRUE, kFALSE);
-    if(taskJPSIfilter){
-        cout << "[-] INFO - Create J/psi filter task, output file: AliAOD.Dielectron.root" << endl;
-        TString extraAOD = "AliAOD.Dielectron.root";
-        mgr->RegisterExtraFile(extraAOD.Data());
+    ((AliAODHandler*)handler)->SetFillAOD(kTRUE);
+
+    // TASK - Basic Jet Finder task
+    gROOT->LoadMacro("AddTaskEmcalJet.C");
+    AliEmcalJetTask *taskJet = AddTaskEmcalJet("usedefault", "usedefault", AliJetContainer::antikt_algorithm, 0.2, AliJetContainer::kChargedJet, 0.15, 0.3, 0.005, AliJetContainer::pt_scheme, "Jet", 1., kFALSE, kFALSE);
+    if(taskJet){
+        taskJet->SetForceBeamType(AliAnalysisTaskEmcal::kpp);
+        taskJet->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+				taskJet->SetTrigClass("EG1|EG2");
+        taskJet->SetUseAliAnaUtils(kTRUE);
+        taskJet->SetZvertexDiffValue(0.5);
+        taskJet->SetNeedEmcalGeom(kFALSE);
+        cout << "[-] INFO - Create jet finder task" << endl;
     }else{
-        cout << "[X] ERROR - Fail to create J/psi filter task." << endl;
+        cout << "[X] ERROR - Fail to create jet finder task." << endl;
         exit(1);
     }
-    // TASK - Multi-dielectron from C. Jahnke
-    gROOT->LoadMacro("AddTask_cjahnke_JPsi.C");
-    // Trigger - MB kINT7 
-    AddTask_cjahnke_JPsi(0, kFALSE);
-    // Trigger - EMCEGA EG1
-    AddTask_cjahnke_JPsi(3, kFALSE);
-    // Trigger - EMCEGA EG2
-    AddTask_cjahnke_JPsi(4, kFALSE);
+ /*   
+    // TASK - Jet rho
+    gROOT->LoadMacro("AddTaskRhoSparse.C");
+    AliAnalysisTaskRhoSparse *taskJetRho = AddTaskRhoSparse("usedefault","usedefault", "Rho02",0.2, AliEmcalJet::kTPCfid, AliJetContainer::kChargedJet, AliJetContainer::pt_scheme, kTRUE, "","TPC", 0.0, 0.01, 0, "");
+    if(taskJetRho){
+        cout << "[-] INFO - Create jet spectrum task" << endl;
+        taskJetRho->SetExcludeLeadJets(2);
+        taskJetRho->SetOutRhoName("Rho02");
+        taskJetRho->SelectCollisionCandidates(AliVEvent::kAny);
+        taskJetRho->SetForceBeamType(AliAnalysisTaskEmcal::kpp);
+        taskJetRho->SetUseNewCentralityEstimation(kTRUE);
+
+        taskJetRho->SetUseAliAnaUtils(kTRUE);
+        taskJetRho->SetUseSPDTrackletVsClusterBG(kTRUE);
+        taskJetRho->SetZvertexDiffValue(0.5);
+        taskJetRho->SetNeedEmcalGeom(kFALSE);
+    }else{
+        cout << "[X] ERROR - Fail to create jet rho task." << endl;
+        exit(1);
+    }
+*/
+    // TASK - Jet spectrum
+    gROOT->LoadMacro("AddTaskEmcalJetSpectraQA.C");
+    AliAnalysisTaskSE *taskJetSpectrum = AddTaskEmcalJetSpectraQA("usedefault", "usedefault", 0.15, 0.30, "");
+    if(taskJetSpectrum){
+        cout << "[-] INFO - Create jet spectrum task" << endl;
+    }else{
+        cout << "[X] ERROR - Fail to create jet spectrum task." << endl;
+        exit(1);
+    }
 
     if(!mgr->InitAnalysis()) return;
-    mgr->SetDebugLevel(2);
+    mgr->SetDebugLevel(3);
     mgr->PrintStatus();
     mgr->SetUseProgressBar(1, 25);
 
@@ -61,10 +73,22 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         // Define data input for local analysis
         TChain* chain = new TChain("aodTree");
         // add a few files to the chain (change this so that your local files are added)
-        chain->Add("AliAOD_input.root");
+        if(datasets == "16l_pass1")
+            chain->Add("AliAOD_input.root");
+        else
+            chain->Add(datasets.Data());
         // start the analysis locally, reading the events from the tchain
         mgr->StartAnalysis("local", chain);
     } else {
+
+        gROOT->LoadMacro("DQ_pp_AOD.C");
+        DQ_pp_AOD();
+        TString runlist = DATASETS[datasets];
+        if(!runlist.Length()){
+            cout << "[X] ERROR - Wrong datasets : " << datasets << endl;
+            exit(1);
+        }
+
         // if we want to run on grid, we create and configure the plugin
         AliAnalysisAlien *alienHandler = new AliAnalysisAlien();
         // also specify the include (header) paths on grid
