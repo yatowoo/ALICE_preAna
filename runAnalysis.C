@@ -24,7 +24,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     if(taskJet){
         taskJet->SetForceBeamType(AliAnalysisTaskEmcal::kpp);
         taskJet->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-				taskJet->SetTrigClass("EG1");
+				taskJet->SetTrigClass("EG1|EG2");
         taskJet->SetUseAliAnaUtils(kFALSE, kFALSE); // Disable AnalysisUtils in Run2
         taskJet->SetZvertexDiffValue(0.5);
         taskJet->SetNeedEmcalGeom(kFALSE);
@@ -65,7 +65,8 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     }
 
     if(!mgr->InitAnalysis()) return;
-    mgr->SetDebugLevel(3);
+		AliLog::SetGlobalLogLevel(AliLog::kMaxType);
+		mgr->SetDebugLevel(2);
     mgr->PrintStatus();
     mgr->SetUseProgressBar(1, 25);
 
