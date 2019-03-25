@@ -1,16 +1,170 @@
 #include "YatoJpsiFilterTask.h"
 
+#include "TChain.h"
+#include "THashList.h"
+
+#include <AliLog.h>
+#include "AliAODCaloCluster.h"
+
 ClassImp(YatoJpsiFilterTask)
 
 YatoJpsiFilterTask::YatoJpsiFilterTask() : 
-  AliAnalysisTaskDielectronFilter(),
-  fIsToMerge(kFALSE)
+  AliAnalysisTaskSE(),
+  fIsToMerge(kFALSE),
+	fDielectron(0),
+	fSelectPhysics(kTRUE),
+	fTriggerMask(AliVEvent::kMB),
+	fExcludeTriggerMask(0),
+	fTriggerOnV0AND(kFALSE),
+	fRejectPileup(kFALSE),
+	fEventStat(0x0),
+	fTriggerLogic(kAny),
+	fTriggerAnalysis(0x0),
+	fStoreLikeSign(kFALSE),
+	fStoreRotatedPairs(kFALSE),
+	fStoreEventsWithSingleTracks(kFALSE),
+	fCreateNanoAOD(kFALSE),
+	fStoreHeader(kFALSE),
+	fStoreEventplanes(kFALSE),
+	fEventFilter(0x0),
+	fQnList(0x0)
 {}
 
 YatoJpsiFilterTask::YatoJpsiFilterTask(const char* name) : 
-  AliAnalysisTaskDielectronFilter(name),
-  fIsToMerge(kFALSE)
-{};
+  AliAnalysisTaskSE(name),
+  fIsToMerge(kFALSE),
+	fDielectron(0),
+	fSelectPhysics(kTRUE),
+	fTriggerMask(AliVEvent::kMB),
+	fExcludeTriggerMask(0),
+	fTriggerOnV0AND(kFALSE),
+	fRejectPileup(kFALSE),
+	fEventStat(0x0),
+	fTriggerLogic(kAny),
+	fTriggerAnalysis(0x0),
+	fStoreLikeSign(kFALSE),
+	fStoreRotatedPairs(kFALSE),
+	fStoreEventsWithSingleTracks(kFALSE),
+	fCreateNanoAOD(kFALSE),
+	fStoreHeader(kFALSE),
+	fStoreEventplanes(kFALSE),
+	fEventFilter(0x0),
+	fQnList(0x0)
+{
+  DefineInput(0,TChain::Class());
+  DefineOutput(1, THashList::Class());
+  DefineOutput(2, TH1D::Class());
+};
+Bool_t YatoJpsiFilterTask::Notify()
+{
+	AddMetadataToUserInfo();
+	return kTRUE;
+}
+
+Bool_t YatoJpsiFilterTask::AddMetadataToUserInfo()
+{
+	static Bool_t copyFirst = kFALSE;
+	if (!copyFirst) {
+		AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+		if (!mgr) {
+			AliError("YatoJpsiFilterTask::AddMetadataToUserInfo() : No analysis manager !");
+			return kFALSE;
+		}
+		TTree *aodTree = mgr->GetTree()->GetTree();
+		if (!aodTree) return kFALSE;
+		TNamed *alirootVersion = (TNamed*)aodTree->GetUserInfo()->FindObject("alirootVersion");
+		if (!alirootVersion) return kFALSE;
+		AliAODHandler *aodHandler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
+		if (!aodHandler) return kFALSE;
+		AliAODExtension *extDielectron = aodHandler->GetFilteredAOD("AliAOD.Dielectron.root");
+		TTree *nanoaodTree = extDielectron->GetTree();
+		if (!nanoaodTree) return kFALSE;
+		nanoaodTree->GetUserInfo()->Add(new TNamed(*alirootVersion));
+		copyFirst = kTRUE;
+	}
+	return kTRUE;
+}
+
+void YatoJpsiFilterTask::SetHeaderData(AliAODHeader* hin, AliAODHeader* hout, Double_t values[AliDielectronVarManager::kNMaxValues])
+{
+	hout->SetRunNumber(hin->GetRunNumber());
+	hout->SetEventNumberESDFile(hin->GetEventNumberESDFile());
+	hout->SetNumberOfESDTracks(hin->GetNumberOfESDTracks());
+	hout->SetOfflineTrigger(hin->GetOfflineTrigger()); // propagate the decision of the physics selection
+
+	hout->SetBunchCrossNumber(hin->GetBunchCrossNumber());
+	hout->SetOrbitNumber(hin->GetOrbitNumber());
+	hout->SetPeriodNumber(hin->GetPeriodNumber());
+	hout->SetTriggerMask(hin->GetTriggerMask());
+	hout->SetTriggerMaskNext50(hin->GetTriggerMaskNext50());
+	hout->SetTriggerCluster(hin->GetTriggerCluster());
+	hout->SetFiredTriggerClasses(hin->GetFiredTriggerClasses());
+	hout->SetEventType(hin->GetEventType());
+	hout->SetMagneticField(hin->GetMagneticField());
+
+	hout->SetCentrality(hin->GetCentralityP());
+
+	hout->SetEventplane(hin->GetEventplaneP());
+	hout->ResetEventplanePointer(); // Deletes the eventplane data member but the members of Mag,Qx,Qy do not get deleted. The eventplane member stores all tracks again therefore unecessary big for nanoAODs
+
+	hout->SetRefMultiplicity((Int_t)values[AliDielectronVarManager::kNTrk]);
+	hout->SetRefMultiplicityPos((Int_t)values[AliDielectronVarManager::kNacc]);
+	hout->SetRefMultiplicityComb05(hin->GetRefMultiplicityComb05());
+	hout->SetRefMultiplicityComb08(hin->GetRefMultiplicityComb08());
+	hout->SetRefMultiplicityComb10(hin->GetRefMultiplicityComb10());
+	hout->SetTPConlyRefMultiplicity(hin->GetTPConlyRefMultiplicity());
+
+
+	hout->SetDAQAttributes(hin->GetDAQAttributes());
+}
+void YatoJpsiFilterTask::UserCreateOutputObjects()
+{
+	if (!fDielectron) {
+		AliFatal("Dielectron framework class required. Please create and instance with proper cuts and set it via 'SetDielectron' before executing this task!!!");
+		return;
+	}
+	if(fStoreRotatedPairs) fDielectron->SetStoreRotatedPairs(kTRUE);
+	fDielectron->SetDontClearArrays();
+	fDielectron->Init();
+
+	Int_t nbins=kNbinsEvent+2;
+	if (!fEventStat){
+		fEventStat=new TH1D("hEventStat","Event statistics",nbins,0,nbins);
+		fEventStat->GetXaxis()->SetBinLabel(1,"Before Phys. Sel.");
+		fEventStat->GetXaxis()->SetBinLabel(2,"After Phys. Sel.");
+
+		fEventStat->GetXaxis()->SetBinLabel(3,"Bin3 not used");
+		fEventStat->GetXaxis()->SetBinLabel(4,"Bin4 not used");
+		fEventStat->GetXaxis()->SetBinLabel(5,"Bin5 not used");
+
+		if(fTriggerOnV0AND) fEventStat->GetXaxis()->SetBinLabel(3,"V0and triggers");
+		if (fEventFilter) fEventStat->GetXaxis()->SetBinLabel(4,"After Event Filter");
+		if (fRejectPileup) fEventStat->GetXaxis()->SetBinLabel(5,"After Pileup rejection");
+
+		fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+1),Form("#splitline{1 candidate}{%s}",fDielectron->GetName()));
+		fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+2),Form("#splitline{With >1 candidate}{%s}",fDielectron->GetName()));
+	}
+
+	Bool_t isAOD=AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
+	if(fCreateNanoAOD && isAOD){
+		AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+		AliAODExtension *extDielectron = aodH->GetFilteredAOD("AliAOD.Dielectron.root");
+		TClonesArray *nanoAODTracks = new TClonesArray("AliAODTrack",500);
+		nanoAODTracks->SetName("tracks");
+		extDielectron->AddBranch("TClonesArray", &nanoAODTracks);
+		TClonesArray *nanoAODVertices = new TClonesArray("AliAODVertex",500);
+		nanoAODVertices->SetName("vertices");
+		extDielectron->AddBranch("TClonesArray", &nanoAODVertices);
+		TClonesArray *nanoAODCaloCluster = new TClonesArray("AliAODCaloCluster",500);
+		nanoAODCaloCluster->SetName("caloClusters");
+		extDielectron->AddBranch("TClonesArray", &nanoAODCaloCluster);
+		extDielectron->GetAOD()->GetStdContent();
+	}else if(fCreateNanoAOD && !isAOD){AliWarning("Filtered-Nano AODs creation works only on AODs ");  }
+
+	PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
+	PostData(2,fEventStat);
+}
+
 
 void YatoJpsiFilterTask::Init(){
   // Initialization
@@ -161,7 +315,7 @@ void YatoJpsiFilterTask::UserExec(Option_t*){
 	if (hasCand)
 	{
 		AliAODEvent *aod = aodH->GetAOD();
-
+		AliDebug(2,Form("Select event with %d tracks.",aod->GetNumberOfESDTracks()));
 		// reset bit for all tracks
 		if (isAOD)
 		{
@@ -209,12 +363,13 @@ void YatoJpsiFilterTask::UserExec(Option_t*){
 			t->Branch(aod->GetList());
 
 		if (!t->GetBranch("dielectrons"))
-			t->Bronch("dielectrons", "TObjArray", fDielectron->GetPairArraysPointer());
+			t->Branch("dielectrons", "TObjArray", fDielectron->GetPairArraysPointer());
 
 		// store positive and negative tracks
 		if (fCreateNanoAOD && isAOD)
 		{
-			Int_t nTracks = (fDielectron->GetTrackArray(0))->GetEntries() + (fDielectron->GetTrackArray(1))->GetEntries();
+      AliAODEvent* aodEv = (static_cast<AliAODEvent *>(InputEvent()));
+			Int_t nTracks = aodEv->GetNumberOfTracks();
 			AliAODEvent *nanoEv = extDielectron->GetAOD();
 			nanoEv->GetTracks()->Clear();
 			nanoEv->GetVertices()->Clear();
@@ -262,13 +417,11 @@ void YatoJpsiFilterTask::UserExec(Option_t*){
 			}
 
 			//______________________________________________________________________________
-
-			AliAODEvent *aod = aodH->GetAOD();
-			for (int kj = 0; kj < aod->GetNumberOfTracks(); kj++)
+			for (int kj = 0; kj < aodEv->GetNumberOfTracks(); kj++)
 			{
-				AliAODTrack* oldTrack = (AliAODTrack*)(aod->GetTrack(kj));
+				AliAODTrack* oldTrack = (AliAODTrack*)(aodEv->GetTrack(kj));
 				Int_t posit = nanoEv->AddTrack(oldTrack);
-				Int_t posVtx = nanoEv->AddVertex((oldTrack->GetProdVertex());
+				Int_t posVtx = nanoEv->AddVertex(oldTrack->GetProdVertex());
 				nanoEv->GetVertex(posVtx)->ResetBit(kIsReferenced);
 				nanoEv->GetVertex(posVtx)->SetUniqueID(0);
 				nanoEv->GetVertex(posVtx)->RemoveDaughters();
