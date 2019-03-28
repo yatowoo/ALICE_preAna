@@ -56,9 +56,10 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
 */
     // TASK - Jet spectrum
     gROOT->LoadMacro("AddTaskEmcalJetSpectraQA.C");
-    AliAnalysisTaskSE *taskJetSpectrum = AddTaskEmcalJetSpectraQA("usedefault", "usedefault", 0.15, 0.30, "");
+    AliAnalysisTaskEmcalJetSpectraQA *taskJetSpectrum = AddTaskEmcalJetSpectraQA("usedefault", "usedefault", 0.15, 0.30, "");
     if(taskJetSpectrum){
         cout << "[-] INFO - Create jet spectrum task" << endl;
+        taskJetSpectrum->AddAcceptedTriggerClass("EG1");
     }else{
         cout << "[X] ERROR - Fail to create jet spectrum task." << endl;
         exit(1);
