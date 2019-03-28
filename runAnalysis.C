@@ -24,7 +24,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
     if(taskJet){
         taskJet->SetForceBeamType(AliAnalysisTaskEmcal::kpp);
         taskJet->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-				taskJet->SetTrigClass("EG1|EG2");
+        taskJet->SetTrigClass("EG1|EG2");
         taskJet->SetUseAliAnaUtils(kTRUE);
         taskJet->SetZvertexDiffValue(0.5);
         taskJet->SetNeedEmcalGeom(kFALSE);
@@ -33,27 +33,6 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         cout << "[X] ERROR - Fail to create jet finder task." << endl;
         exit(1);
     }
- /*   
-    // TASK - Jet rho
-    gROOT->LoadMacro("AddTaskRhoSparse.C");
-    AliAnalysisTaskRhoSparse *taskJetRho = AddTaskRhoSparse("usedefault","usedefault", "Rho02",0.2, AliEmcalJet::kTPCfid, AliJetContainer::kChargedJet, AliJetContainer::pt_scheme, kTRUE, "","TPC", 0.0, 0.01, 0, "");
-    if(taskJetRho){
-        cout << "[-] INFO - Create jet spectrum task" << endl;
-        taskJetRho->SetExcludeLeadJets(2);
-        taskJetRho->SetOutRhoName("Rho02");
-        taskJetRho->SelectCollisionCandidates(AliVEvent::kAny);
-        taskJetRho->SetForceBeamType(AliAnalysisTaskEmcal::kpp);
-        taskJetRho->SetUseNewCentralityEstimation(kTRUE);
-
-        taskJetRho->SetUseAliAnaUtils(kTRUE);
-        taskJetRho->SetUseSPDTrackletVsClusterBG(kTRUE);
-        taskJetRho->SetZvertexDiffValue(0.5);
-        taskJetRho->SetNeedEmcalGeom(kFALSE);
-    }else{
-        cout << "[X] ERROR - Fail to create jet rho task." << endl;
-        exit(1);
-    }
-*/
     // TASK - Jet spectrum
     gROOT->LoadMacro("AddTaskEmcalJetSpectraQA.C");
     AliAnalysisTaskSE *taskJetSpectrum = AddTaskEmcalJetSpectraQA("usedefault", "usedefault", 0.15, 0.30, "");
@@ -95,7 +74,7 @@ void runAnalysis(TString mode="local", TString work_dir="16l_Full_CJ_MB-EG1-EG2"
         alienHandler->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
         // make sure your source files get copied to grid
         alienHandler->SetAdditionalLibs("AddTaskJPSIFilter_pp.C AddTask_cjahnke_JPsi.C ConfigJpsi_cj_pp.C YatoJpsiFilterTask.h YatoJpsiFilterTask.cxx");
-				alienHandler->SetAnalysisSource("YatoJpsiFilterTask.cxx")
+        alienHandler->SetAnalysisSource("YatoJpsiFilterTask.cxx")
         // select the aliphysics version. all other packages
         // are LOADED AUTOMATICALLY!
         // RECOMMENDATION - Keep it the same with local version
