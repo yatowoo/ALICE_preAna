@@ -3,11 +3,11 @@
 # Script for running ALICE jobs in local datasets
 
 ALICE_OUTPUT_DIR=$1
-ALICE_DATA_PATTERN=$2
-filelist=($(ls $ALICE_DATA_PATTERN))
-ALICE_DATA_FILE=${filelist[$3]}
-data_dir=$(basename $(dirname $ALICE_DATA_FILE))
-ALICE_OUTPUT_DIR=$1/$data_dir
+ALICE_DATA_DIR=$2
+let "no=$3+1"
+ALICE_DATA_NO=$(printf "%03d" $no)
+ALICE_DATA_FILE=$2/AOD_$ALICE_DATA_NO.root
+ALICE_OUTPUT_DIR=$1/$ALICE_DATA_NO
 
 set -x
 mkdir -p $ALICE_OUTPUT_DIR
