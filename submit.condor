@@ -6,8 +6,8 @@
 ###########
 
 EXE = run-alice.sh
-ALICE_DATA_PATTERN = /data2/ytwu/LOG/AnaResult/Nano*/AliAOD.Dielectron.root
-ALICE_OUTPUT_DIR = /data2/ytwu/LOG/ALICE_NanoAOD_fix
+ALICE_DATA_PATTERN = /data2/ytwu/LOG/AnaResult/Nano*/AliAOD.Dielectron_fix.root
+ALICE_OUTPUT_DIR = /data2/ytwu/LOG/ALICE_NanoAOD_Jet_NoAnaUtils
 OUTPUT_DIR = $(ALICE_OUTPUT_DIR)
 
 N_JOBS = 16
